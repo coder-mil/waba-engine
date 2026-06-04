@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build (webpack compiles client + server)
-RUN npm run postinstall
+RUN npm run build
 
 # ---- Production Stage ----
 FROM node:18-alpine AS production
