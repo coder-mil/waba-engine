@@ -7,6 +7,7 @@ export async function initNLU() {
     languages: ['pt', 'en'],
     forceNER: true,
     nlu: { log: false },
+    model: { fileName: '/tmp/model.nlp' },
   });
 
   // Intent base: saudações
