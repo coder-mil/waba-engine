@@ -32,7 +32,9 @@ export async function initNLU() {
   manager.addAnswer('pt', 'support.help', 'Claro! Como posso te ajudar?');
   manager.addAnswer('pt', 'support.issue', 'Entendi. Me conta mais sobre o problema.');
 
+  // Train and save explicitly to /tmp
   await manager.train();
+  await manager.save('/tmp/model.nlp');
   console.log('✅ NLU treinado');
 }
 
@@ -52,6 +54,7 @@ export async function trainFromFlow(definition: {
   }
 
   await manager.train();
+  await manager.save('/tmp/model.nlp');
   console.log(`✅ NLU re-treinado com ${definition.intents.length} intents`);
 }
 
