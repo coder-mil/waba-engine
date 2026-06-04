@@ -25,30 +25,13 @@ export function createFSM(initialState = States.INIT) {
     }),
 
     [States.AWAITING_INTENT]: (input: any, _fsm: any) => {
-      // Use NLU's answer when available and non-empty (from flow-trained intents)
       if (input.answer) {
         if (input.intent === 'despedida' || input.intent === 'greetings.bye') {
           return { value: { action: 'send', text: input.answer }, next: States.END };
         }
         return { value: { action: 'send', text: input.answer }, next: States.AWAITING_INTENT };
       }
-      // Fallback: if intent is recognized but has no answer text, use default responses
-      if (input.intent === 'Menu' || input.intent === 'menu') {
-        return {
-          value: { action: 'send', text: '📋 Menu:\n1. Informações\n2. Suporte\n3. Sair' },
-          next: States.AWAITING_INTENT,
-        };
-      }
-      // Fallback hardcoded responses for base intents
-      if (input.intent === 'greetings.bye') {
-        return { value: { action: 'send', text: 'Até!' }, next: States.END };
-      }
-      if (input.intent === 'support.issue') {
-        return { value: { action: 'send', text: 'Me conta mais.' }, next: States.AWAITING_INTENT };
-      }
-      if (input.intent === 'greetings.hello') {
-        return { value: { action: 'send', text: 'Oi! Como posso te ajudar?' }, next: States.AWAITING_INTENT };
-      }
+      // Sem answer do flow = não entendi
       return {
         value: { action: 'send', text: 'Não entendi. Tente novamente.' },
         next: States.AWAITING_INTENT,

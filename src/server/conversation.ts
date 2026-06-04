@@ -1,8 +1,28 @@
-import { pool, getUserSession, upsertUserSession, saveMessageLog } from './db';
+import { pool, getUserSession, upsertUserSession, saveMessageLog, getActiveFlow } from './db';
 import { createFSM, ChatContext, States } from './fsm';
 import { classifyIntent } from './nlu';
 
 const TTL_MS = 30 * 60 * 1000; // 30 min
+
+/**
+ * Carrega o flow ativo e encontra o answer de uma intent pela definition.
+ * O answer vem DO BANCO (definition.intents), não do NLU — o NLU só classifica.
+ */
+async function getAnswerFromFlow(intent: string): Promise<string | undefined> {
+  try {
+    const flow = await getActiveFlow();
+    if (!flow?.definition?.intents) return undefined;
+
+    const intents = flow.definition.intents as Array<{ name: string; answer?: string }>;
+    const found = intents.find(
+      (i) => i.name === intent || i.name === intent.toLowerCase()
+    );
+    if (found?.answer) return found.answer as string;
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 export async function processMessage(from: string, text: string) {
   // Get session from DB or create new FSM
@@ -26,9 +46,12 @@ export async function processMessage(from: string, text: string) {
     ctx = { currentState: States.INIT, iterator: createFSM(), data: {} };
   }
 
-  // Classify intent
+  // Classify intent via NLU (classificação, não resposta)
   const classification = await classifyIntent(text);
   console.log(`Intent: ${classification.intent} (${classification.score.toFixed(2)})`);
+
+  // Get answer from FLOW (banco de dados), não do NLU
+  const flowAnswer = await getAnswerFromFlow(classification.intent);
 
   // Save inbound log
   await saveMessageLog({
@@ -40,12 +63,12 @@ export async function processMessage(from: string, text: string) {
     score: classification.score,
   });
 
-  // Build input for FSM
+  // Build input for FSM — answer vem do FLOW (banco), não do NLU
   const fsmInput = {
     intent: classification.intent,
     text: text,
     score: classification.score,
-    answer: classification.answer,
+    answer: flowAnswer,
   };
 
   // FSM next
@@ -57,10 +80,10 @@ export async function processMessage(from: string, text: string) {
     result = ctx.iterator.next(fsmInput);
   }
 
-  // After INIT bootstrap, result.text may be empty — use NLU answer as greeting fallback
+  // After INIT bootstrap, result.text may be empty — use flow answer as greeting fallback
   let responseText = result.value?.text;
-  if (!responseText && classification.answer) {
-    responseText = classification.answer;
+  if (!responseText && flowAnswer) {
+    responseText = flowAnswer;
     result = { ...result, value: { ...result.value, text: responseText } };
   }
 
