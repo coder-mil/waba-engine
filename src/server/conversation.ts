@@ -7,17 +7,31 @@ const TTL_MS = 30 * 60 * 1000; // 30 min
 /**
  * Carrega o flow ativo e encontra o answer de uma intent pela definition.
  * O answer vem DO BANCO (definition.intents), não do NLU — o NLU só classifica.
+ * Se a intent não for encontrada ou tiver answer vazio, retorna o anything_else do flow.
  */
 async function getAnswerFromFlow(intent: string): Promise<string | undefined> {
   try {
     const flow = await getActiveFlow();
-    if (!flow?.definition?.intents) return undefined;
+    if (!flow?.definition) return undefined;
 
-    const intents = flow.definition.intents as Array<{ name: string; answer?: string }>;
+    const definition = flow.definition as any;
+    const intents = definition.intents as Array<{ name: string; answer?: string }>;
+
     const found = intents.find(
-      (i) => i.name === intent || i.name === intent.toLowerCase()
+      (i) => i.name.toLowerCase() === intent.toLowerCase()
     );
-    if (found?.answer) return found.answer as string;
+
+    // Answer existe e não é vazio → usa o answer da intent
+    if (found?.answer && found.answer.trim() !== '') {
+      return found.answer as string;
+    }
+
+    // Fallback: anything_else é obrigatório no flow — usado quando:
+    // - intent não encontrada
+    // - intent encontrada mas answer é vazio
+    const anythingElse = definition.anything_else;
+    if (anythingElse) return anythingElse as string;
+
     return undefined;
   } catch {
     return undefined;
