@@ -1,41 +1,50 @@
+import * as fs from 'fs';
 import { NlpManager } from 'node-nlp';
 
 let manager: NlpManager;
+const MODEL_PATH = '/tmp/model.nlp';
 
 export async function initNLU() {
-  manager = new NlpManager({
-    languages: ['pt', 'en'],
-    forceNER: true,
-    nlu: { log: false },
-    model: { fileName: '/tmp/model.nlp' },
-  });
+  try {
+    manager = new NlpManager({
+      languages: ['pt', 'en'],
+      forceNER: true,
+      nlu: { log: false },
+      model: { fileName: MODEL_PATH },
+    });
 
-  // Intent base: saudações
-  manager.addDocument('pt', 'oi', 'greetings.hello');
-  manager.addDocument('pt', 'olá', 'greetings.hello');
-  manager.addDocument('pt', 'hey', 'greetings.hello');
-  manager.addDocument('pt', 'bom dia', 'greetings.hello');
-  manager.addDocument('pt', 'boa tarde', 'greetings.hello');
-  manager.addDocument('pt', 'boa noite', 'greetings.hello');
-  manager.addDocument('pt', 'tchau', 'greetings.bye');
-  manager.addDocument('pt', 'adeus', 'greetings.bye');
-  manager.addDocument('pt', 'até logo', 'greetings.bye');
+    // Intent base: saudações
+    manager.addDocument('pt', 'oi', 'greetings.hello');
+    manager.addDocument('pt', 'olá', 'greetings.hello');
+    manager.addDocument('pt', 'hey', 'greetings.hello');
+    manager.addDocument('pt', 'bom dia', 'greetings.hello');
+    manager.addDocument('pt', 'boa tarde', 'greetings.hello');
+    manager.addDocument('pt', 'boa noite', 'greetings.hello');
+    manager.addDocument('pt', 'tchau', 'greetings.bye');
+    manager.addDocument('pt', 'adeus', 'greetings.bye');
+    manager.addDocument('pt', 'até logo', 'greetings.bye');
 
-  // Intent base: suporte
-  manager.addDocument('pt', 'ajuda', 'support.help');
-  manager.addDocument('pt', 'não entendi', 'support.help');
-  manager.addDocument('pt', 'problema', 'support.issue');
+    // Intent base: suporte
+    manager.addDocument('pt', 'ajuda', 'support.help');
+    manager.addDocument('pt', 'não entendi', 'support.help');
+    manager.addDocument('pt', 'problema', 'support.issue');
 
-  // Answers
-  manager.addAnswer('pt', 'greetings.hello', 'Olá! Como posso ajudar?');
-  manager.addAnswer('pt', 'greetings.bye', 'Até logo! 👋');
-  manager.addAnswer('pt', 'support.help', 'Claro! Como posso te ajudar?');
-  manager.addAnswer('pt', 'support.issue', 'Entendi. Me conta mais sobre o problema.');
+    // Answers
+    manager.addAnswer('pt', 'greetings.hello', 'Olá! Como posso ajudar?');
+    manager.addAnswer('pt', 'greetings.bye', 'Até logo! 👋');
+    manager.addAnswer('pt', 'support.help', 'Claro! Como posso te ajudar?');
+    manager.addAnswer('pt', 'support.issue', 'Entendi. Me conta mais sobre o problema.');
 
-  // Train and save explicitly to /tmp
-  await manager.train();
-  await manager.save('/tmp/model.nlp');
-  console.log('✅ NLU treinado');
+    await manager.train();
+    // Salvar explicitamente após treinar
+    const modelData = manager.export();
+    fs.writeFileSync(MODEL_PATH, JSON.stringify(modelData));
+    console.log('✅ NLU treinado');
+  } catch (err) {
+    console.warn('⚠️ NLU init failed:', err);
+    // Cria manager vazio para não quebrar classifyIntent
+    manager = new NlpManager({ languages: ['pt', 'en'] });
+  }
 }
 
 export async function trainFromFlow(definition: {
@@ -54,7 +63,9 @@ export async function trainFromFlow(definition: {
   }
 
   await manager.train();
-  await manager.save('/tmp/model.nlp');
+  // Salvar via export + writeFileSync (evita save() que juga no cwd)
+  const modelData = manager.export();
+  fs.writeFileSync(MODEL_PATH, JSON.stringify(modelData));
   console.log(`✅ NLU re-treinado com ${definition.intents.length} intents`);
 }
 
