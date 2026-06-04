@@ -1,4 +1,5 @@
 import * as express from 'express';
+import * as path from 'path';
 import apiRouter from './flowRoutes';
 import webhookRouter from './webhookRoutes';
 import { initNLU } from './nlu';
@@ -10,6 +11,12 @@ app.use(express.json());
 app.use(express.static('public'));
 app.use('/api', apiRouter);
 app.use(webhookRouter);
+
+// SPA fallback — todas as rotas não-API retornam o index.html
+// para que o React Router (client-side) possahandle as rotas
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 const port = process.env.PORT || 3000;
 
