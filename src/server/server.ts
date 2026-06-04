@@ -2,6 +2,7 @@ import * as express from 'express';
 import * as path from 'path';
 import apiRouter from './flowRoutes';
 import webhookRouter from './webhookRoutes';
+import chatRouter from './chatRoutes';
 import { initNLU } from './nlu';
 import { initDB } from './db';
 
@@ -10,6 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/api', apiRouter);
+app.use(chatRouter);
 app.use(webhookRouter);
 
 // SPA fallback — todas as rotas não-API retornam o index.html

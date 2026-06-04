@@ -2,6 +2,7 @@ import * as React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import FlowEditor from './pages/FlowEditor';
 import Dashboard from './pages/Dashboard';
+import Chat from './pages/Chat';
 
 const Home = () => (
   <div style={{
@@ -22,7 +23,7 @@ const Home = () => (
         FSM + NLU + Editor Visual · Construa chatbots inteligentes sem código
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, textAlign: 'left' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, textAlign: 'left' }}>
         <NavCard
           to="/editor"
           icon="🎨"
@@ -34,6 +35,12 @@ const Home = () => (
           icon="📊"
           title="Dashboard"
           description="Monitore logs, sessões ativas e teste o NLU em tempo real"
+        />
+        <NavCard
+          to="/chat"
+          icon="💬"
+          title="Chat Bot"
+          description="Teste seu bot em tempo real via chat web"
         />
       </div>
 
@@ -99,6 +106,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/editor" element={<FlowEditor />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/chat" element={<Chat />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
