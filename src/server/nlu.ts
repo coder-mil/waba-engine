@@ -1,8 +1,8 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import { NlpManager } from 'node-nlp';
 
 let manager: NlpManager;
-const MODEL_PATH = '/tmp/model.nlp';
 
 export async function initNLU() {
   try {
@@ -10,7 +10,6 @@ export async function initNLU() {
       languages: ['pt', 'en'],
       forceNER: true,
       nlu: { log: false },
-      model: { fileName: MODEL_PATH },
     });
 
     // Intent base: saudações
@@ -36,13 +35,14 @@ export async function initNLU() {
     manager.addAnswer('pt', 'support.issue', 'Entendi. Me conta mais sobre o problema.');
 
     await manager.train();
-    // Salvar explicitamente após treinar
-    const modelData = manager.export();
-    fs.writeFileSync(MODEL_PATH, JSON.stringify(modelData));
+    // save() sempre grava no CWD — usa chdir('/tmp') como workaround
+    const cwd = process.cwd();
+    process.chdir('/tmp');
+    await manager.save(path.join('/tmp', 'model.nlp'));
+    process.chdir(cwd);
     console.log('✅ NLU treinado');
   } catch (err) {
     console.warn('⚠️ NLU init failed:', err);
-    // Cria manager vazio para não quebrar classifyIntent
     manager = new NlpManager({ languages: ['pt', 'en'] });
   }
 }
@@ -63,9 +63,10 @@ export async function trainFromFlow(definition: {
   }
 
   await manager.train();
-  // Salvar via export + writeFileSync (evita save() que juga no cwd)
-  const modelData = manager.export();
-  fs.writeFileSync(MODEL_PATH, JSON.stringify(modelData));
+  const cwd = process.cwd();
+  process.chdir('/tmp');
+  await manager.save(path.join('/tmp', 'model.nlp'));
+  process.chdir(cwd);
   console.log(`✅ NLU re-treinado com ${definition.intents.length} intents`);
 }
 
