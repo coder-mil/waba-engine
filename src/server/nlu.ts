@@ -73,6 +73,7 @@ export async function trainFromFlow(definition: {
 export async function classifyIntent(text: string, lang = 'pt') {
   if (!manager) throw new Error('NLU não inicializado');
   const result = await manager.process(lang, text);
+  console.log(`[NLU classifyIntent] text="${text}" → intent=${result.intent} answer=${result.answer} score=${result.score}`);
   return {
     intent: result.intent,
     score: result.score,

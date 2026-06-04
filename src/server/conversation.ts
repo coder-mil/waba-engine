@@ -49,11 +49,25 @@ export async function processMessage(from: string, text: string) {
   };
 
   // FSM next
-  const result = ctx.iterator.next(fsmInput);
+  // If currentState is INIT, it returns empty text and transitions to AWAITING_INTENT.
+  // We then call next() again with the actual input so AWAITING_INTENT gives the real response.
+  let result = ctx.iterator.next(fsmInput);
+  if (ctx.currentState === States.INIT && result.value?.next === States.AWAITING_INTENT) {
+    ctx.currentState = result.value.next; // advance to AWAITING_INTENT before second next()
+    result = ctx.iterator.next(fsmInput);
+  }
+
+  // After INIT bootstrap, result.text may be empty — use NLU answer as greeting fallback
+  let responseText = result.value?.text;
+  if (!responseText && classification.answer) {
+    responseText = classification.answer;
+    result = { ...result, value: { ...result.value, text: responseText } };
+  }
+
   const newState = result.value?.next || ctx.currentState;
   ctx.data.lastActivity = Date.now();
 
-  // Persist session
+  // Persist session (flowId is undefined since we use FSM directly, not from DB)
   await upsertUserSession(from, {
     currentState: newState,
     contextData: ctx.data,
