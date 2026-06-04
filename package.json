@@ -1,14 +1,13 @@
 {
-  "name": "barebones-react-typescript-express",
+  "name": "boilerplate-react-typescript-express",
   "version": "1.0.0",
-  "description": "",
+  "description": "React + Express + TypeScript boilerplate",
   "main": "dist/server.js",
   "scripts": {
-    "watch:build": "webpack -w",
-    "watch:server": "nodemon dist/server.js",
-    "dev": "npm-run-all --parallel watch:*",
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development -w",
     "start": "node dist/server.js",
-    "postinstall": "webpack"
+    "postinstall": "npm run build"
   },
   "keywords": [],
   "author": "",

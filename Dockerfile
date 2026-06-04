@@ -3,16 +3,16 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy ONLY package files first (for dependency caching)
 COPY package*.json ./
 
-# Install ALL dependencies (including dev)
+# Install all dependencies
 RUN npm ci
 
-# Copy source
+# Copy source code
 COPY . .
 
-# Build webpack (client + server)
+# Build (webpack compiles client + server)
 RUN npm run postinstall
 
 # ---- Production Stage ----
