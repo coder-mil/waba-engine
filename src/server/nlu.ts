@@ -35,6 +35,25 @@ export async function initNLU() {
   console.log('✅ NLU treinado');
 }
 
+export async function trainFromFlow(definition: {
+  intents?: Array<{ name: string; phrases: string[]; answer?: string }>;
+}) {
+  if (!manager) throw new Error('NLU não inicializado');
+  if (!definition.intents) return;
+
+  for (const intent of definition.intents) {
+    for (const phrase of intent.phrases) {
+      manager.addDocument('pt', phrase, intent.name);
+    }
+    if (intent.answer) {
+      manager.addAnswer('pt', intent.name, intent.answer);
+    }
+  }
+
+  await manager.train();
+  console.log(`✅ NLU re-treinado com ${definition.intents.length} intents`);
+}
+
 export async function classifyIntent(text: string, lang = 'pt') {
   if (!manager) throw new Error('NLU não inicializado');
   const result = await manager.process(lang, text);

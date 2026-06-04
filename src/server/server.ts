@@ -1,5 +1,5 @@
 import * as express from 'express';
-import apiRouter from './routes';
+import apiRouter from './flowRoutes';
 import webhookRouter from './webhookRoutes';
 import { initNLU } from './nlu';
 import { initDB } from './db';
