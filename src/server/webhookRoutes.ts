@@ -33,7 +33,9 @@ router.post('/webhook', async (req, res) => {
   for (const entry of body.entry) {
     for (const change of entry.changes) {
       if (change.field !== 'messages') continue;
-      const msg = change.value.messages[0];
+      const messages = change.value?.messages;
+      if (!messages || !Array.isArray(messages) || !messages.length) continue;
+      const msg = messages[0];
       if (!msg) continue;
 
       const from = msg.from;
