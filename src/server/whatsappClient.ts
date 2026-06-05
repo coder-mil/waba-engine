@@ -8,12 +8,14 @@ const fetch = require('node-fetch');
  * Logs completos de request/response para debug de erros.
  */
 export async function sendReply(to: string, message: string): Promise<any> {
-  const url = `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`;
+  const url = `https://graph.facebook.com/v25.0/${PHONE_NUMBER_ID}/messages`;
   const body = {
     messaging_product: 'whatsapp',
     to,
     type: 'text',
-    text: { body: message },
+    text: {
+      body: message,
+    },
   };
 
   console.log(`[WhatsApp API] → Enviando para ${to}: "${message}"`);
