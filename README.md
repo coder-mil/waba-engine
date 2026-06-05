@@ -1,6 +1,6 @@
-# WhatsApp Bot Builder
+# WABA Engine
 
-Bot de WhatsApp com FSM + NLU integrado. Respostas vêm do **banco de dados** (flow definition), não do NLU.
+WhatsApp Business API bot engine com FSM + NLU integrado. Respostas vêm do **banco de dados** (flow definition), não do NLU.
 
 ## Arquitetura
 
@@ -58,7 +58,7 @@ INIT → AWAITING_INTENT → CONFIRMED → END
 ## Estrutura do projeto
 
 ```
-boilerplate-project/
+waba-engine/
 ├── public/
 │   └── js/app.js          # Client bundle (webpack)
 ├── src/
@@ -88,8 +88,8 @@ boilerplate-project/
 
 ```bash
 # 1. Clonar
-git clone https://github.com/coder-mil/boilerplate-react-typescript-express.git
-cd boilerplate-react-typescript-express
+git clone https://github.com/coder-mil/waba-engine.git
+cd waba-engine
 
 # 2. Instalar
 npm install

@@ -1,7 +1,7 @@
 {
-  "name": "boilerplate-react-typescript-express",
+  "name": "waba-engine",
   "version": "1.0.0",
-  "description": "React + Express + TypeScript boilerplate",
+  "description": "WhatsApp Business API bot engine with FSM + NLU",
   "main": "dist/server.js",
   "scripts": {
     "build": "webpack --mode production",
