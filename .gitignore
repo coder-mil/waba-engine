@@ -7,5 +7,19 @@ node_modules/
 dist/
 public/js/app.js
 
-# NLU model (generated)
+# NLU model (generated at runtime)
 model.nlp
+
+# secrets & local config
+.env
+.env.local
+
+# PM2 process manager
+ecosystem.config.js
+
+# runtime logs
+logs/
+*.log
+
+# debug scripts (used during local testing)
+scripts/_*

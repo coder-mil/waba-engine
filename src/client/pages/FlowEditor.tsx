@@ -2,82 +2,100 @@ import * as React from 'react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Types (mirror server/src/server/types/flow.ts v3) ───────────────────────
 
-interface State {
-  id: string;
-  label: string;
-  type: 'normal' | 'initial' | 'final';
-  position: { x: number; y: number };
-  action?: { type: 'send' | 'goto' | 'end'; text?: string; nextState?: string };
-  intent?: string;
-  answer?: string;
+interface IntentDef {
+  name: string;
+  phrases: string[];
 }
 
-interface Edge {
+interface EntityDef {
+  name: string;
+  type: 'enum' | 'regex';
+  values?: string[];   // for enum
+  pattern?: string;    // for regex
+}
+
+interface NodeDef {
   id: string;
-  from: string;
-  to: string;
-  label?: string;
-  intent?: string;
+  label: string;
+  answer?: string;
+  edges: Array<{ when: string; to: string; set?: Record<string, string> }>;
+  terminal?: boolean;
+  // editor-only metadata (not persisted by runtime)
+  position?: { x: number; y: number };
+  type?: 'normal' | 'initial';  // initial is editor highlight only
+}
+
+interface FlowDefinition {
+  intents: IntentDef[];
+  entities?: EntityDef[];
+  nodes: NodeDef[];
+  initial_hint?: string;
+  ttl_minutes?: number;
 }
 
 interface Flow {
   id: number;
   name: string;
   description: string;
-  definition: {
-    intents?: Array<{ name: string; phrases: string[]; answer?: string }>;
-  };
-  states: State[];
-  edges: Edge[];
+  definition: FlowDefinition;
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
-// ─── Flow Editor Component ─────────────────────────────────────────────────────
+// ─── Canvas Component ────────────────────────────────────────────────────────
 
 interface CanvasProps {
-  states: State[];
-  edges: Edge[];
+  nodes: NodeDef[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
-  onMoveState: (id: string, x: number, y: number) => void;
+  onMoveNode: (id: string, x: number, y: number) => void;
   onConnect: (from: string, to: string) => void;
   connectingFrom: string | null;
 }
 
-const Canvas: React.FC<CanvasProps> = ({ states, edges, selectedId, onSelect, onMoveState, onConnect, connectingFrom }) => {
+const Canvas: React.FC<CanvasProps> = ({
+  nodes,
+  selectedId,
+  onSelect,
+  onMoveNode,
+  onConnect,
+  connectingFrom,
+}) => {
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [tempEdge, setTempEdge] = useState<{ x: number; y: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const STATE_W = 160;
-  const STATE_H = 60;
+  const NODE_W = 160;
+  const NODE_H = 60;
 
-  const handleMouseDown = (e: React.MouseEvent, stateId: string) => {
+  const handleMouseDown = (e: React.MouseEvent, nodeId: string) => {
     e.stopPropagation();
-    const state = states.find(s => s.id === stateId);
-    if (!state) return;
-    setDragging(stateId);
-    setDragOffset({ x: e.clientX - state.position.x, y: e.clientY - state.position.y });
-    onSelect(stateId);
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+    setDragging(nodeId);
+    setDragOffset({ x: e.clientX - (node.position?.x || 0), y: e.clientY - (node.position?.y || 0) });
+    onSelect(nodeId);
   };
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (dragging && svgRef.current) {
-      const rect = svgRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left - dragOffset.x;
-      const y = e.clientY - rect.top - dragOffset.y;
-      onMoveState(dragging, Math.max(0, x), Math.max(0, y));
-    }
-    if (connectingFrom && svgRef.current) {
-      const rect = svgRef.current.getBoundingClientRect();
-      setTempEdge({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-    }
-  }, [dragging, dragOffset, connectingFrom, onMoveState]);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (dragging && svgRef.current) {
+        const rect = svgRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left - dragOffset.x;
+        const y = e.clientY - rect.top - dragOffset.y;
+        onMoveNode(dragging, Math.max(0, x), Math.max(0, y));
+      }
+      if (connectingFrom && svgRef.current) {
+        const rect = svgRef.current.getBoundingClientRect();
+        setTempEdge({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+      }
+    },
+    [dragging, dragOffset, connectingFrom, onMoveNode]
+  );
 
   const handleMouseUp = () => {
     setDragging(null);
@@ -88,63 +106,80 @@ const Canvas: React.FC<CanvasProps> = ({ states, edges, selectedId, onSelect, on
     if (e.target === svgRef.current) onSelect(null);
   };
 
-  const getStateCenter = (state: State) => ({
-    x: state.position.x + STATE_W / 2,
-    y: state.position.y + STATE_H / 2,
+  const getNodeCenter = (node: NodeDef) => ({
+    x: (node.position?.x || 0) + NODE_W / 2,
+    y: (node.position?.y || 0) + NODE_H / 2,
   });
 
   return (
     <svg
       ref={svgRef}
       className="flow-canvas"
-      style={{ width: '100%', height: '600px', background: '#1a1a2e', cursor: connectingFrom ? 'crosshair' : 'default' }}
+      style={{
+        width: '100%',
+        height: '600px',
+        background: '#1a1a2e',
+        cursor: connectingFrom ? 'crosshair' : 'default',
+      }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onClick={handleCanvasClick}
     >
-      {/* Grid pattern */}
       <defs>
         <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
           <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#2a2a4a" strokeWidth="0.5" />
         </pattern>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#4a9eff" />
+        </marker>
       </defs>
       <rect width="100%" height="100%" fill="url(#grid)" />
 
-      {/* Edges */}
-      {edges.map(edge => {
-        const fromState = states.find(s => s.id === edge.from);
-        const toState = states.find(s => s.id === edge.to);
-        if (!fromState || !toState) return null;
-        const f = getStateCenter(fromState);
-        const t = getStateCenter(toState);
-        const dx = t.x - f.x;
-        const dy = t.y - f.y;
-        const mx = (f.x + t.x) / 2;
-        const my = (f.y + t.y) / 2;
-        const curve = Math.min(Math.abs(dx) * 0.3, 80);
-        const labelOffset = Math.abs(dy) > 30 ? -10 : 20;
-
-        return (
-          <g key={edge.id}>
-            <path
-              d={`M ${f.x} ${f.y} C ${f.x + curve} ${f.y}, ${t.x - curve} ${t.y}, ${t.x} ${t.y}`}
-              fill="none"
-              stroke="#4a9eff"
-              strokeWidth="2"
-              markerEnd="url(#arrowhead)"
-            />
-            {edge.label && (
-              <text x={mx} y={my + labelOffset} fill="#fff" fontSize="12" textAnchor="middle">{edge.label}</text>
-            )}
-          </g>
-        );
-      })}
+      {/* Edges (flattened from every node's edges[]) */}
+      {nodes.flatMap((node) =>
+        node.edges.map((edge, i) => {
+          const toNode = nodes.find(n => n.id === edge.to);
+          if (!toNode) return null;
+          const f = getNodeCenter(node);
+          const t = getNodeCenter(toNode);
+          const dx = t.x - f.x;
+          const dy = t.y - f.y;
+          const mx = (f.x + t.x) / 2;
+          const my = (f.y + t.y) / 2;
+          const curve = Math.min(Math.abs(dx) * 0.3, 80);
+          const labelOffset = Math.abs(dy) > 30 ? -10 : 20;
+          const key = `${node.id}__${i}__${edge.to}`;
+          return (
+            <g key={key}>
+              <path
+                d={`M ${f.x} ${f.y} C ${f.x + curve} ${f.y}, ${t.x - curve} ${t.y}, ${t.x} ${t.y}`}
+                fill="none"
+                stroke="#4a9eff"
+                strokeWidth="2"
+                markerEnd="url(#arrowhead)"
+              />
+              {edge.when && (
+                <text
+                  x={mx}
+                  y={my + labelOffset}
+                  fill="#fff"
+                  fontSize="11"
+                  textAnchor="middle"
+                  style={{ paintOrder: 'stroke', stroke: '#1a1a2e', strokeWidth: 3 }}
+                >
+                  {edge.when}
+                </text>
+              )}
+            </g>
+          );
+        })
+      )}
 
       {/* Temporary edge while connecting */}
       {connectingFrom && tempEdge && (() => {
-        const from = states.find(s => s.id === connectingFrom);
+        const from = nodes.find(n => n.id === connectingFrom);
         if (!from) return null;
-        const f = getStateCenter(from);
+        const f = getNodeCenter(from);
         const curve = Math.min(Math.abs(tempEdge.x - f.x) * 0.3, 80);
         return (
           <path
@@ -157,44 +192,69 @@ const Canvas: React.FC<CanvasProps> = ({ states, edges, selectedId, onSelect, on
         );
       })()}
 
-      <defs>
-        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-          <polygon points="0 0, 10 3.5, 0 7" fill="#4a9eff" />
-        </marker>
-      </defs>
+      {/* Nodes */}
+      {nodes.map((node) => {
+        const isSelected = selectedId === node.id;
+        const isFallback = node.id === 'fallback';
+        const isInitial = node.type === 'initial';
+        const isTerminal = !!node.terminal;
 
-      {/* States */}
-      {states.map(state => {
-        const isSelected = selectedId === state.id;
-        const borderColor = state.type === 'initial' ? '#00ff88' : state.type === 'final' ? '#ff4a6e' : isSelected ? '#4a9eff' : '#3a3a5a';
-        const bgColor = state.type === 'initial' ? 'rgba(0,255,136,0.1)' : state.type === 'final' ? 'rgba(255,74,110,0.1)' : 'rgba(74,158,255,0.05)';
+        let borderColor = '#3a3a5a';
+        let bgColor = 'rgba(74,158,255,0.05)';
+        if (isFallback) {
+          borderColor = '#ff4a6e';
+          bgColor = 'rgba(255,74,110,0.08)';
+        } else if (isInitial) {
+          borderColor = '#00ff88';
+          bgColor = 'rgba(0,255,136,0.1)';
+        } else if (isTerminal) {
+          borderColor = '#ff4a6e';
+          bgColor = 'rgba(255,74,110,0.1)';
+        } else if (isSelected) {
+          borderColor = '#4a9eff';
+        }
 
         return (
           <g
-            key={state.id}
-            transform={`translate(${state.position.x}, ${state.position.y})`}
+            key={node.id}
+            transform={`translate(${node.position?.x || 0}, ${node.position?.y || 0})`}
             style={{ cursor: 'grab' }}
-            onMouseDown={(e) => handleMouseDown(e, state.id)}
-            onDoubleClick={() => onSelect(state.id)}
+            onMouseDown={(e) => handleMouseDown(e, node.id)}
+            onDoubleClick={() => onSelect(node.id)}
           >
-            <rect width={STATE_W} height={STATE_H} rx="8" fill={bgColor} stroke={borderColor} strokeWidth={isSelected ? 2 : 1} />
-            {state.type === 'initial' && <circle cx="12" cy={STATE_H / 2} r="6" fill="#00ff88" />}
-            {state.type === 'final' && <rect x="4" y={STATE_H / 2 - 8} width="16" height="16" rx="4" fill="#ff4a6e" />}
-            <text x={STATE_W / 2} y={STATE_H / 2 - 6} fill="#fff" fontSize="13" textAnchor="middle" fontWeight="bold">{state.label}</text>
-            {state.action?.type === 'send' && state.action.text && (
-              <text x={STATE_W / 2} y={STATE_H / 2 + 12} fill="#888" fontSize="10" textAnchor="middle">
-                {state.action.text.slice(0, 20)}{state.action.text.length > 20 ? '…' : ''}
-              </text>
-            )}
+            <rect
+              width={NODE_W}
+              height={NODE_H}
+              rx="8"
+              fill={bgColor}
+              stroke={borderColor}
+              strokeWidth={isSelected ? 2 : 1}
+              strokeDasharray={isFallback ? '4 4' : undefined}
+            />
+            {isInitial && <circle cx="12" cy={NODE_H / 2} r="6" fill="#00ff88" />}
+            {isTerminal && <rect x="4" y={NODE_H / 2 - 8} width="16" height="16" rx="4" fill="#ff4a6e" />}
+            <text
+              x={NODE_W / 2}
+              y={NODE_H / 2 - 6}
+              fill="#fff"
+              fontSize="13"
+              textAnchor="middle"
+              fontWeight="bold"
+            >
+              {node.label.length > 22 ? node.label.slice(0, 22) + '…' : node.label}
+            </text>
+            <text x={NODE_W / 2} y={NODE_H / 2 + 12} fill="#888" fontSize="10" textAnchor="middle">
+              {isFallback ? '⚠️ Nó reservado' : node.answer ? node.answer.slice(0, 22) + (node.answer.length > 22 ? '…' : '') : 'sem answer'}
+            </text>
             {/* Connection handle */}
             <circle
-              cx={STATE_W}
-              cy={STATE_H / 2}
+              cx={NODE_W}
+              cy={NODE_H / 2}
               r="6"
               fill="#4a9eff"
               opacity="0.7"
               style={{ cursor: 'crosshair' }}
-              onMouseDown={(e) => { e.stopPropagation(); onConnect(state.id, ''); }}
+              onMouseDown={(e) => { e.stopPropagation(); onConnect(node.id, ''); }}
             />
           </g>
         );
@@ -203,22 +263,19 @@ const Canvas: React.FC<CanvasProps> = ({ states, edges, selectedId, onSelect, on
   );
 };
 
-// ─── Main App ─────────────────────────────────────────────────────────────────
+// ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function FlowEditor() {
   const navigate = useNavigate();
   const [flows, setFlows] = useState<Flow[]>([]);
   const [currentFlow, setCurrentFlow] = useState<Flow | null>(null);
-  const [states, setStates] = useState<State[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'flows' | 'editor'>('flows');
-  const [editingIntent, setEditingIntent] = useState(false);
-  const [intents, setIntents] = useState<Array<{ name: string; phrases: string[]; answer: string }>>([]);
 
-  // Load flows on mount
+  // ─── Data loading ─────────────────────────────────────────────────────────
+
   useEffect(() => {
     loadFlows();
   }, []);
@@ -238,13 +295,32 @@ export default function FlowEditor() {
     try {
       const res = await fetch(`/api/flows/${flowId}`);
       const data = await res.json();
-      const flow = data.flow;
-      setCurrentFlow(flow);
-      setStates(flow.states || []);
-      setEdges(flow.edges || []);
-      setIntents(flow.definition?.intents || []);
+      const flow: Flow = data.flow;
+      // Ensure nodes have positions (defensive)
+      const def = flow.definition || { intents: [], nodes: [] };
+      if (!def.nodes) def.nodes = [];
+      if (!def.intents) def.intents = [];
+      def.nodes = def.nodes.map((n, i) => ({
+        ...n,
+        position: n.position || {
+          x: 80 + (i % 4) * 220,
+          y: 80 + Math.floor(i / 4) * 140,
+        },
+      }));
+      // Ensure fallback node exists and is visible
+      if (!def.nodes.find(n => n.id === 'fallback')) {
+        def.nodes.push({
+          id: 'fallback',
+          label: 'Fallback',
+          answer: 'Desculpe, não entendi. Pode reformular?',
+          edges: [],
+          terminal: false,
+          position: { x: 500, y: 400 },
+        });
+      }
+      setCurrentFlow({ ...flow, definition: def });
       setActiveTab('editor');
-      setSelectedId(null);
+      setSelectedNodeId(null);
     } catch (err) {
       console.error('Erro ao selecionar flow:', err);
     }
@@ -266,36 +342,12 @@ export default function FlowEditor() {
     }
   };
 
-  const saveFlow = async () => {
-    if (!currentFlow) return;
-    setLoading(true);
-    try {
-      await fetch(`/api/flows/${currentFlow.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: currentFlow.name,
-          description: currentFlow.description,
-          definition: { intents },
-          states,
-          edges,
-        }),
-      });
-      await loadFlows();
-    } catch (err) {
-      console.error('Erro ao salvar:', err);
-    }
-    setLoading(false);
-  };
-
   const deleteFlow = async (flowId: number) => {
     if (!confirm('Remover este flow?')) return;
     try {
       await fetch(`/api/flows/${flowId}`, { method: 'DELETE' });
       if (currentFlow?.id === flowId) {
         setCurrentFlow(null);
-        setStates([]);
-        setEdges([]);
         setActiveTab('flows');
       }
       await loadFlows();
@@ -323,76 +375,302 @@ export default function FlowEditor() {
     }
   };
 
-  // State management
-  const addState = (type: State['type'] = 'normal') => {
-    const id = `state_${Date.now()}`;
-    const count = states.filter(s => s.type === type).length + 1;
-    const label = type === 'initial' ? 'Início' : type === 'final' ? 'Fim' : `State ${count}`;
-    const newState: State = {
+  // ─── Definition mutations ────────────────────────────────────────────────
+
+  const getDef = (): FlowDefinition | null => {
+    return currentFlow ? currentFlow.definition : null;
+  };
+
+  const setDef = (newDef: FlowDefinition) => {
+    if (!currentFlow) return;
+    setCurrentFlow({ ...currentFlow, definition: newDef });
+  };
+
+  const updateNode = (id: string, updates: Partial<NodeDef>) => {
+    const def = getDef();
+    if (!def) return;
+    const newDef = { ...def, nodes: def.nodes.map(n => (n.id === id ? { ...n, ...updates } : n)) };
+    setDef(newDef);
+  };
+
+  const addNode = (kind: 'normal' | 'initial' | 'fallback' = 'normal') => {
+    const def = getDef();
+    if (!def) return;
+    let id: string;
+    let label: string;
+    if (kind === 'fallback') {
+      if (def.nodes.find(n => n.id === 'fallback')) {
+        alert('Já existe um nó fallback.');
+        return;
+      }
+      id = 'fallback';
+      label = 'Fallback';
+    } else {
+      id = `node_${Date.now()}`;
+      label = kind === 'initial' ? 'Início' : `Node ${def.nodes.length + 1}`;
+    }
+    const position = {
+      x: kind === 'initial' ? 80 : kind === 'fallback' ? 500 : 300 + Math.random() * 200,
+      y: kind === 'initial' ? 80 : kind === 'fallback' ? 400 : 100 + Math.random() * 300,
+    };
+    const newNode: NodeDef = {
       id,
       label,
-      type,
-      position: {
-        x: type === 'initial' ? 50 : type === 'final' ? 600 : 300 + Math.random() * 200,
-        y: type === 'initial' ? 250 : type === 'final' ? 250 : 100 + Math.random() * 300,
-      },
+      answer: kind === 'fallback' ? 'Desculpe, não entendi. Pode reformular?' : '',
+      edges: [],
+      type: kind === 'initial' ? 'initial' : 'normal',
+      position,
     };
-    if (type === 'final') newState.action = { type: 'end' };
-    setStates([...states, newState]);
-    setSelectedId(id);
+    // If creating an initial node, also set initial_hint
+    const newDef: FlowDefinition = {
+      ...def,
+      nodes: [...def.nodes, newNode],
+      initial_hint: kind === 'initial' ? id : def.initial_hint,
+    };
+    setDef(newDef);
+    setSelectedNodeId(id);
   };
 
-  const updateState = (id: string, updates: Partial<State>) => {
-    setStates(states.map(s => s.id === id ? { ...s, ...updates } : s));
+  const deleteNode = (id: string) => {
+    const def = getDef();
+    if (!def) return;
+    if (id === 'fallback') {
+      alert('O nó fallback é reservado e não pode ser removido.');
+      return;
+    }
+    const newDef: FlowDefinition = {
+      ...def,
+      nodes: def.nodes
+        .filter(n => n.id !== id)
+        .map(n => ({ ...n, edges: n.edges.filter(e => e.to !== id) })),
+    };
+    if (newDef.initial_hint === id) newDef.initial_hint = undefined;
+    setDef(newDef);
+    if (selectedNodeId === id) setSelectedNodeId(null);
   };
 
-  const deleteState = (id: string) => {
-    setStates(states.filter(s => s.id !== id));
-    setEdges(edges.filter(e => e.from !== id && e.to !== id));
-    if (selectedId === id) setSelectedId(null);
-  };
-
-  const handleMoveState = (id: string, x: number, y: number) => {
-    updateState(id, { position: { x, y } });
+  const handleMoveNode = (id: string, x: number, y: number) => {
+    updateNode(id, { position: { x, y } });
   };
 
   const handleConnect = (from: string, to: string) => {
     if (!to) {
-      // Start connecting
       setConnectingFrom(from);
       return;
     }
     if (connectingFrom && from !== to) {
-      // Complete connection
-      const existing = edges.find(e => e.from === connectingFrom && e.to === to);
-      if (!existing) {
-        setEdges([...edges, { id: `edge_${Date.now()}`, from: connectingFrom, to }]);
+      const def = getDef();
+      if (!def) return;
+      const sourceNode = def.nodes.find(n => n.id === connectingFrom);
+      if (!sourceNode) return;
+      if (sourceNode.edges.find(e => e.to === to)) {
+        setConnectingFrom(null);
+        return;
       }
+      updateNode(connectingFrom, {
+        edges: [...sourceNode.edges, { when: 'intent:agendar', to }],
+      });
     }
     setConnectingFrom(null);
   };
 
-  const selectedState = states.find(s => s.id === selectedId);
+  // ─── Intent mutations ────────────────────────────────────────────────────
 
-  // ─── Render ──────────────────────────────────────────────────────────────────
+  const addIntent = () => {
+    const def = getDef();
+    if (!def) return;
+    setDef({ ...def, intents: [...def.intents, { name: '', phrases: [] }] });
+  };
+
+  const updateIntent = (idx: number, updated: IntentDef) => {
+    const def = getDef();
+    if (!def) return;
+    const newIntents = [...def.intents];
+    newIntents[idx] = updated;
+    setDef({ ...def, intents: newIntents });
+  };
+
+  const deleteIntent = (idx: number) => {
+    const def = getDef();
+    if (!def) return;
+    setDef({ ...def, intents: def.intents.filter((_, i) => i !== idx) });
+  };
+
+  // ─── Entity mutations ────────────────────────────────────────────────────
+
+  const addEntity = () => {
+    const def = getDef();
+    if (!def) return;
+    const entities = def.entities || [];
+    setDef({ ...def, entities: [...entities, { name: '', type: 'enum', values: [] }] });
+  };
+
+  const updateEntity = (idx: number, updated: EntityDef) => {
+    const def = getDef();
+    if (!def) return;
+    const entities = def.entities || [];
+    const newEntities = [...entities];
+    newEntities[idx] = updated;
+    setDef({ ...def, entities: newEntities });
+  };
+
+  const deleteEntity = (idx: number) => {
+    const def = getDef();
+    if (!def) return;
+    const entities = def.entities || [];
+    setDef({ ...def, entities: entities.filter((_, i) => i !== idx) });
+  };
+
+  // ─── Save ────────────────────────────────────────────────────────────────
+
+  const handleSave = async () => {
+    if (!currentFlow) return;
+
+    // Validation 1: 'none' intent is reserved
+    if (currentFlow.definition.intents.some(i => i.name.trim() === 'none')) {
+      alert('Erro: "none" é um intent reservado (usado para fallback). Renomeie essa intent.');
+      return;
+    }
+
+    // Validation 2: must have a fallback node
+    if (!currentFlow.definition.nodes.some(n => n.id === 'fallback')) {
+      alert('Erro: deve existir um nó com id "fallback" (nó reservado).');
+      return;
+    }
+
+    // Validation 3: edge.to must reference existing node ids
+    const nodeIds = new Set(currentFlow.definition.nodes.map(n => n.id));
+    for (const node of currentFlow.definition.nodes) {
+      for (const edge of node.edges) {
+        if (!nodeIds.has(edge.to)) {
+          alert(`Erro: o nó "${node.label}" tem uma aresta apontando para "${edge.to}", que não existe.`);
+          return;
+        }
+      }
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/flows/${currentFlow.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: currentFlow.name,
+          description: currentFlow.description,
+          definition: currentFlow.definition,
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `HTTP ${res.status}`);
+      }
+      await loadFlows();
+      alert('Flow salvo com sucesso!');
+    } catch (err) {
+      console.error('Erro ao salvar:', err);
+      alert('Erro ao salvar: ' + (err instanceof Error ? err.message : String(err)));
+    }
+    setLoading(false);
+  };
+
+  const def = getDef();
+  const selectedNode = def?.nodes.find(n => n.id === selectedNodeId) || null;
+
+  // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="flow-editor" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f1e', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
+    <div
+      className="flow-editor"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        background: '#0f0f1e',
+        color: '#fff',
+        fontFamily: 'system-ui, sans-serif',
+      }}
+    >
       {/* Header */}
-      <div style={{ padding: '16px 24px', borderBottom: '1px solid #2a2a4a', display: 'flex', alignItems: 'center', gap: 16, background: '#1a1a2e' }}>
-        <button onClick={() => navigate('/')} style={{ padding: '6px 16px', background: '#3a3a5a', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer' }}>← Voltar</button>
+      <div
+        style={{
+          padding: '16px 24px',
+          borderBottom: '1px solid #2a2a4a',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          background: '#1a1a2e',
+        }}
+      >
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            padding: '6px 16px',
+            background: '#3a3a5a',
+            border: 'none',
+            borderRadius: 6,
+            color: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          ← Voltar
+        </button>
         <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Flow Editor</h1>
         {currentFlow && (
           <>
             <input
               value={currentFlow.name}
               onChange={e => setCurrentFlow({ ...currentFlow, name: e.target.value })}
-              style={{ background: 'transparent', border: '1px solid #3a3a5a', borderRadius: 6, padding: '6px 12px', color: '#fff', fontSize: 16, width: 200 }}
+              style={{
+                background: 'transparent',
+                border: '1px solid #3a3a5a',
+                borderRadius: 6,
+                padding: '6px 12px',
+                color: '#fff',
+                fontSize: 16,
+                width: 200,
+              }}
             />
-            <button onClick={saveFlow} disabled={loading} style={{ padding: '6px 16px', background: '#4a9eff', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer' }}>
+            <input
+              value={currentFlow.description}
+              onChange={e => setCurrentFlow({ ...currentFlow, description: e.target.value })}
+              placeholder="Descrição…"
+              style={{
+                background: 'transparent',
+                border: '1px solid #3a3a5a',
+                borderRadius: 6,
+                padding: '6px 12px',
+                color: '#fff',
+                fontSize: 13,
+                width: 200,
+              }}
+            />
+            <button
+              onClick={handleSave}
+              disabled={loading}
+              style={{
+                padding: '6px 16px',
+                background: '#4a9eff',
+                border: 'none',
+                borderRadius: 6,
+                color: '#fff',
+                cursor: 'pointer',
+              }}
+            >
               {loading ? 'Salvando…' : 'Salvar'}
             </button>
-            <button onClick={trainNLU} style={{ padding: '6px 16px', background: '#00cc88', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer' }}>Treinar NLU</button>
+            <button
+              onClick={trainNLU}
+              style={{
+                padding: '6px 16px',
+                background: '#00cc88',
+                border: 'none',
+                borderRadius: 6,
+                color: '#fff',
+                cursor: 'pointer',
+              }}
+            >
+              Treinar NLU
+            </button>
           </>
         )}
       </div>
@@ -401,14 +679,30 @@ export default function FlowEditor() {
       <div style={{ display: 'flex', borderBottom: '1px solid #2a2a4a', background: '#1a1a2e' }}>
         <button
           onClick={() => setActiveTab('flows')}
-          style={{ padding: '10px 24px', background: 'none', border: 'none', color: activeTab === 'flows' ? '#4a9eff' : '#888', borderBottom: activeTab === 'flows' ? '2px solid #4a9eff' : '2px solid transparent', cursor: 'pointer', fontWeight: 600 }}
+          style={{
+            padding: '10px 24px',
+            background: 'none',
+            border: 'none',
+            color: activeTab === 'flows' ? '#4a9eff' : '#888',
+            borderBottom: activeTab === 'flows' ? '2px solid #4a9eff' : '2px solid transparent',
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
         >
           Flows
         </button>
         <button
           onClick={() => setActiveTab('editor')}
           disabled={!currentFlow}
-          style={{ padding: '10px 24px', background: 'none', border: 'none', color: activeTab === 'editor' ? '#4a9eff' : '#888', borderBottom: activeTab === 'editor' ? '2px solid #4a9eff' : '2px solid transparent', cursor: currentFlow ? 'pointer' : 'not-allowed', fontWeight: 600 }}
+          style={{
+            padding: '10px 24px',
+            background: 'none',
+            border: 'none',
+            color: activeTab === 'editor' ? '#4a9eff' : '#888',
+            borderBottom: activeTab === 'editor' ? '2px solid #4a9eff' : '2px solid transparent',
+            cursor: currentFlow ? 'pointer' : 'not-allowed',
+            fontWeight: 600,
+          }}
         >
           Editor {currentFlow ? `— ${currentFlow.name}` : ''}
         </button>
@@ -420,29 +714,112 @@ export default function FlowEditor() {
           <div style={{ padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>Meus Flows</h2>
-              <button onClick={createFlow} style={{ padding: '8px 20px', background: '#4a9eff', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer', fontSize: 14 }}>+ Novo Flow</button>
+              <button
+                onClick={createFlow}
+                style={{
+                  padding: '8px 20px',
+                  background: '#4a9eff',
+                  border: 'none',
+                  borderRadius: 6,
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                }}
+              >
+                + Novo Flow
+              </button>
             </div>
             {flows.length === 0 ? (
-              <p style={{ color: '#666', textAlign: 'center', padding: '40px 0' }}>Nenhum flow ainda. Clique em "Novo Flow" para começar.</p>
+              <p style={{ color: '#666', textAlign: 'center', padding: '40px 0' }}>
+                Nenhum flow ainda. Clique em "Novo Flow" para começar.
+              </p>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gap: 16,
+                }}
+              >
                 {flows.map(flow => (
-                  <div key={flow.id} style={{ background: '#1a1a2e', border: `1px solid ${flow.is_active ? '#00cc88' : '#2a2a4a'}`, borderRadius: 10, padding: 20 }}>
+                  <div
+                    key={flow.id}
+                    style={{
+                      background: '#1a1a2e',
+                      border: `1px solid ${flow.is_active ? '#00cc88' : '#2a2a4a'}`,
+                      borderRadius: 10,
+                      padding: 20,
+                    }}
+                  >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
                         <h3 style={{ margin: '0 0 4px 0', fontSize: 16 }}>{flow.name}</h3>
-                        <p style={{ margin: 0, fontSize: 12, color: '#666' }}>{flow.description || 'Sem descrição'}</p>
+                        <p style={{ margin: 0, fontSize: 12, color: '#666' }}>
+                          {flow.description || 'Sem descrição'}
+                        </p>
                       </div>
                       {flow.is_active && (
-                        <span style={{ background: '#00cc8833', color: '#00cc88', fontSize: 11, padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>Ativo</span>
+                        <span
+                          style={{
+                            background: '#00cc8833',
+                            color: '#00cc88',
+                            fontSize: 11,
+                            padding: '2px 8px',
+                            borderRadius: 20,
+                            fontWeight: 600,
+                          }}
+                        >
+                          Ativo
+                        </span>
                       )}
                     </div>
                     <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                      <button onClick={() => selectFlow(flow.id)} style={{ flex: 1, padding: '6px 0', background: '#4a9eff', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer', fontSize: 13 }}>Editar</button>
+                      <button
+                        onClick={() => selectFlow(flow.id)}
+                        style={{
+                          flex: 1,
+                          padding: '6px 0',
+                          background: '#4a9eff',
+                          border: 'none',
+                          borderRadius: 6,
+                          color: '#fff',
+                          cursor: 'pointer',
+                          fontSize: 13,
+                        }}
+                      >
+                        Editar
+                      </button>
                       {!flow.is_active && (
-                        <button onClick={() => activateFlow(flow.id)} style={{ flex: 1, padding: '6px 0', background: '#00cc8833', border: 'none', borderRadius: 6, color: '#00cc88', cursor: 'pointer', fontSize: 13 }}>Ativar</button>
+                        <button
+                          onClick={() => activateFlow(flow.id)}
+                          style={{
+                            flex: 1,
+                            padding: '6px 0',
+                            background: '#00cc8833',
+                            border: 'none',
+                            borderRadius: 6,
+                            color: '#00cc88',
+                            cursor: 'pointer',
+                            fontSize: 13,
+                          }}
+                        >
+                          Ativar
+                        </button>
                       )}
-                      <button onClick={() => deleteFlow(flow.id)} style={{ padding: '6px 12px', background: '#ff4a6e33', border: 'none', borderRadius: 6, color: '#ff4a6e', cursor: 'pointer', fontSize: 13 }}>✕</button>
+                      <button
+                        onClick={() => deleteFlow(flow.id)}
+                        style={{
+                          padding: '6px 12px',
+                          background: '#ff4a6e33',
+                          border: 'none',
+                          borderRadius: 6,
+                          color: '#ff4a6e',
+                          cursor: 'pointer',
+                          fontSize: 13,
+                        }}
+                      >
+                        ✕
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -451,70 +828,269 @@ export default function FlowEditor() {
           </div>
         )}
 
-        {activeTab === 'editor' && currentFlow && (
+        {activeTab === 'editor' && currentFlow && def && (
           <div style={{ display: 'flex', height: 'calc(100vh - 130px)' }}>
             {/* Canvas */}
             <div style={{ flex: 1, position: 'relative' }}>
               <Canvas
-                states={states}
-                edges={edges}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                onMoveState={handleMoveState}
+                nodes={def.nodes}
+                selectedId={selectedNodeId}
+                onSelect={setSelectedNodeId}
+                onMoveNode={handleMoveNode}
                 onConnect={handleConnect}
                 connectingFrom={connectingFrom}
               />
 
               {/* Toolbar overlay */}
-              <div style={{ position: 'absolute', top: 16, left: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <button onClick={() => addState('initial')} style={{ padding: '8px 16px', background: '#00ff8833', border: '1px solid #00ff88', borderRadius: 6, color: '#00ff88', cursor: 'pointer', fontSize: 13 }}>+ Início</button>
-                <button onClick={() => addState('normal')} style={{ padding: '8px 16px', background: '#4a9eff33', border: '1px solid #4a9eff', borderRadius: 6, color: '#4a9eff', cursor: 'pointer', fontSize: 13 }}>+ State</button>
-                <button onClick={() => addState('final')} style={{ padding: '8px 16px', background: '#ff4a6e33', border: '1px solid #ff4a6e', borderRadius: 6, color: '#ff4a6e', cursor: 'pointer', fontSize: 13 }}>+ Fim</button>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  left: 16,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                }}
+              >
+                <button
+                  onClick={() => addNode('initial')}
+                  style={{
+                    padding: '8px 16px',
+                    background: '#00ff8833',
+                    border: '1px solid #00ff88',
+                    borderRadius: 6,
+                    color: '#00ff88',
+                    cursor: 'pointer',
+                    fontSize: 13,
+                  }}
+                >
+                  + Início
+                </button>
+                <button
+                  onClick={() => addNode('normal')}
+                  style={{
+                    padding: '8px 16px',
+                    background: '#4a9eff33',
+                    border: '1px solid #4a9eff',
+                    borderRadius: 6,
+                    color: '#4a9eff',
+                    cursor: 'pointer',
+                    fontSize: 13,
+                  }}
+                >
+                  + Node
+                </button>
+                <button
+                  onClick={() => addNode('fallback')}
+                  disabled={!!def.nodes.find(n => n.id === 'fallback')}
+                  style={{
+                    padding: '8px 16px',
+                    background: '#ff4a6e22',
+                    border: '1px solid #ff4a6e',
+                    borderRadius: 6,
+                    color: '#ff4a6e',
+                    cursor: def.nodes.find(n => n.id === 'fallback') ? 'not-allowed' : 'pointer',
+                    fontSize: 13,
+                    opacity: def.nodes.find(n => n.id === 'fallback') ? 0.5 : 1,
+                  }}
+                >
+                  + Fallback
+                </button>
               </div>
 
               {/* Edge label popup */}
               {connectingFrom && (
-                <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', background: '#1a1a2e', border: '1px solid #4a9eff', borderRadius: 8, padding: '12px 20px', fontSize: 13 }}>
-                  Clique em outro state para conectar — <button onClick={() => setConnectingFrom(null)} style={{ color: '#4a9eff', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Cancelar</button>
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 16,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: '#1a1a2e',
+                    border: '1px solid #4a9eff',
+                    borderRadius: 8,
+                    padding: '12px 20px',
+                    fontSize: 13,
+                  }}
+                >
+                  Clique em outro nó para conectar —{' '}
+                  <button
+                    onClick={() => setConnectingFrom(null)}
+                    style={{
+                      color: '#4a9eff',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Cancelar
+                  </button>
                 </div>
               )}
 
-              {states.length === 0 && (
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#666', fontSize: 16 }}>
-                  Use os botões acima para adicionar states ao flow
+              {def.nodes.length === 0 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    color: '#666',
+                    fontSize: 16,
+                  }}
+                >
+                  Use os botões acima para adicionar nós ao flow
                 </div>
               )}
             </div>
 
             {/* Properties sidebar */}
-            <div style={{ width: 300, borderLeft: '1px solid #2a2a4a', background: '#1a1a2e', overflowY: 'auto', padding: 16 }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: 14, color: '#888', textTransform: 'uppercase', letterSpacing: 1 }}>Propriedades</h3>
-              {selectedState ? (
-                <StateProperties
-                  state={selectedState}
-                  states={states}
-                  onUpdate={(updates) => updateState(selectedState.id, updates)}
-                  onDelete={() => deleteState(selectedState.id)}
-                  onClose={() => setSelectedId(null)}
+            <div
+              style={{
+                width: 320,
+                borderLeft: '1px solid #2a2a4a',
+                background: '#1a1a2e',
+                overflowY: 'auto',
+                padding: 16,
+              }}
+            >
+              <h3
+                style={{
+                  margin: '0 0 16px 0',
+                  fontSize: 14,
+                  color: '#888',
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                }}
+              >
+                Propriedades
+              </h3>
+              {selectedNode ? (
+                <NodeProperties
+                  node={selectedNode}
+                  nodes={def.nodes}
+                  entities={def.entities || []}
+                  onUpdate={updates => updateNode(selectedNode.id, updates)}
+                  onDelete={() => deleteNode(selectedNode.id)}
+                  onClose={() => setSelectedNodeId(null)}
                 />
               ) : (
-                <p style={{ color: '#555', fontSize: 13 }}>Clique em um state para editar suas propriedades</p>
+                <p style={{ color: '#555', fontSize: 13 }}>Clique em um nó para editar suas propriedades</p>
               )}
 
               {/* Intents section */}
-              <div style={{ marginTop: 24, borderTop: '1px solid #2a2a4a', paddingTop: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <h3 style={{ margin: 0, fontSize: 14, color: '#888', textTransform: 'uppercase', letterSpacing: 1 }}>Intents</h3>
-                  <button onClick={() => setIntents([...intents, { name: '', phrases: [], answer: '' }])} style={{ padding: '4px 12px', background: '#4a9eff33', border: '1px solid #4a9eff', borderRadius: 4, color: '#4a9eff', cursor: 'pointer', fontSize: 12 }}>+ Intent</button>
+              <div
+                style={{
+                  marginTop: 24,
+                  borderTop: '1px solid #2a2a4a',
+                  paddingTop: 16,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 12,
+                  }}
+                >
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 14,
+                      color: '#888',
+                      textTransform: 'uppercase',
+                      letterSpacing: 1,
+                    }}
+                  >
+                    Intents
+                  </h3>
+                  <button
+                    onClick={addIntent}
+                    style={{
+                      padding: '4px 12px',
+                      background: '#4a9eff33',
+                      border: '1px solid #4a9eff',
+                      borderRadius: 4,
+                      color: '#4a9eff',
+                      cursor: 'pointer',
+                      fontSize: 12,
+                    }}
+                  >
+                    + Intent
+                  </button>
                 </div>
-                {intents.map((intent, i) => (
-                  <IntentRow key={i} intent={intent} onUpdate={(updated) => {
-                    const newIntents = [...intents];
-                    newIntents[i] = updated;
-                    setIntents(newIntents);
-                  }} onDelete={() => setIntents(intents.filter((_, idx) => idx !== i))} />
+                {def.intents.map((intent, i) => (
+                  <IntentRow
+                    key={i}
+                    intent={intent}
+                    onUpdate={updated => updateIntent(i, updated)}
+                    onDelete={() => deleteIntent(i)}
+                  />
                 ))}
-                {intents.length === 0 && <p style={{ color: '#555', fontSize: 13 }}>Nenhum intent. Adicione phrases que disparam intents no NLU.</p>}
+                {def.intents.length === 0 && (
+                  <p style={{ color: '#555', fontSize: 13 }}>
+                    Nenhum intent. Adicione phrases que disparam intents no NLU.
+                  </p>
+                )}
+              </div>
+
+              {/* Entities section */}
+              <div
+                style={{
+                  marginTop: 24,
+                  borderTop: '1px solid #2a2a4a',
+                  paddingTop: 16,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 12,
+                  }}
+                >
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 14,
+                      color: '#888',
+                      textTransform: 'uppercase',
+                      letterSpacing: 1,
+                    }}
+                  >
+                    Entities
+                  </h3>
+                  <button
+                    onClick={addEntity}
+                    style={{
+                      padding: '4px 12px',
+                      background: '#4a9eff33',
+                      border: '1px solid #4a9eff',
+                      borderRadius: 4,
+                      color: '#4a9eff',
+                      cursor: 'pointer',
+                      fontSize: 12,
+                    }}
+                  >
+                    + Entity
+                  </button>
+                </div>
+                {(def.entities || []).map((entity, i) => (
+                  <EntityRow
+                    key={i}
+                    entity={entity}
+                    onUpdate={updated => updateEntity(i, updated)}
+                    onDelete={() => deleteEntity(i)}
+                  />
+                ))}
+                {(def.entities || []).length === 0 && (
+                  <p style={{ color: '#555', fontSize: 13 }}>
+                    Nenhuma entity. Adicione entities (enum ou regex) que podem ser extraídas do texto.
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -528,101 +1104,325 @@ export default function FlowEditor() {
   );
 }
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
-const StateProperties: React.FC<{
-  state: State;
-  states: State[];
-  onUpdate: (updates: Partial<State>) => void;
+const NodeProperties: React.FC<{
+  node: NodeDef;
+  nodes: NodeDef[];
+  entities: EntityDef[];
+  onUpdate: (updates: Partial<NodeDef>) => void;
   onDelete: () => void;
   onClose: () => void;
-}> = ({ state, states, onUpdate, onDelete, onClose }) => {
+}> = ({ node, nodes, entities, onUpdate, onDelete }) => {
+  const isFallback = node.id === 'fallback';
+
+  const updateEdge = (idx: number, updates: Partial<NodeDef['edges'][number]>) => {
+    const newEdges = [...node.edges];
+    newEdges[idx] = { ...newEdges[idx], ...updates };
+    onUpdate({ edges: newEdges });
+  };
+
+  const addEdge = () => {
+    const firstOther = nodes.find(n => n.id !== node.id);
+    onUpdate({
+      edges: [
+        ...node.edges,
+        { when: 'intent:agendar', to: firstOther ? firstOther.id : '' },
+      ],
+    });
+  };
+
+  const removeEdge = (idx: number) => {
+    onUpdate({ edges: node.edges.filter((_, i) => i !== idx) });
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {isFallback && (
+        <div
+          style={{
+            background: 'rgba(255,74,110,0.1)',
+            border: '1px solid #ff4a6e',
+            borderRadius: 6,
+            padding: 8,
+            fontSize: 12,
+            color: '#ff4a6e',
+          }}
+        >
+          ⚠️ Nó reservado (fallback). Sempre presente no flow; usado quando o NLU classifica
+          como <code>none</code> ou nenhum edge casa.
+        </div>
+      )}
+
       <div>
         <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>Label</label>
-        <input value={state.label} onChange={e => onUpdate({ label: e.target.value })} style={{ width: '100%', padding: '8px 10px', background: '#0f0f1e', border: '1px solid #3a3a5a', borderRadius: 6, color: '#fff', boxSizing: 'border-box' }} />
-      </div>
-
-      <div>
-        <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>Tipo</label>
-        <select value={state.type} onChange={e => onUpdate({ type: e.target.value as State['type'] })} style={{ width: '100%', padding: '8px 10px', background: '#0f0f1e', border: '1px solid #3a3a5a', borderRadius: 6, color: '#fff' }}>
-          <option value="normal">Normal</option>
-          <option value="initial">Inicial</option>
-          <option value="final">Final</option>
-        </select>
-      </div>
-
-      {state.type !== 'final' && (
-        <div>
-          <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>Ação</label>
-          <select
-            value={state.action?.type || 'send'}
-            onChange={e => onUpdate({ action: { type: e.target.value as 'send' | 'goto' | 'end', text: state.action?.text, nextState: state.action?.nextState } })}
-            style={{ width: '100%', padding: '8px 10px', background: '#0f0f1e', border: '1px solid #3a3a5a', borderRadius: 6, color: '#fff' }}
-          >
-            <option value="send">Enviar Mensagem</option>
-            <option value="goto">Ir para State</option>
-          </select>
-        </div>
-      )}
-
-      {state.action?.type === 'send' && (
-        <div>
-          <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>Mensagem</label>
-          <textarea
-            value={state.action.text || ''}
-            onChange={e => onUpdate({ action: { ...state.action!, text: e.target.value } })}
-            rows={3}
-            style={{ width: '100%', padding: '8px 10px', background: '#0f0f1e', border: '1px solid #3a3a5a', borderRadius: 6, color: '#fff', resize: 'vertical', boxSizing: 'border-box' }}
-          />
-        </div>
-      )}
-
-      {state.action?.type === 'goto' && (
-        <div>
-          <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>Próximo State</label>
-          <select
-            value={state.action.nextState || ''}
-            onChange={e => onUpdate({ action: { ...state.action!, nextState: e.target.value } })}
-            style={{ width: '100%', padding: '8px 10px', background: '#0f0f1e', border: '1px solid #3a3a5a', borderRadius: 6, color: '#fff' }}
-          >
-            <option value="">Selecione…</option>
-            {states.filter(s => s.id !== state.id).map(s => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      <div>
-        <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>Intent (NLU match)</label>
         <input
-          value={state.intent || ''}
-          onChange={e => onUpdate({ intent: e.target.value })}
-          placeholder="ex: greetings.hello"
-          style={{ width: '100%', padding: '8px 10px', background: '#0f0f1e', border: '1px solid #3a3a5a', borderRadius: 6, color: '#fff', boxSizing: 'border-box' }}
+          value={node.label}
+          onChange={e => onUpdate({ label: e.target.value })}
+          disabled={isFallback}
+          style={{
+            width: '100%',
+            padding: '8px 10px',
+            background: '#0f0f1e',
+            border: '1px solid #3a3a5a',
+            borderRadius: 6,
+            color: '#fff',
+            boxSizing: 'border-box',
+          }}
         />
       </div>
 
       <div>
-        <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>Resposta NLU</label>
+        <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>ID</label>
         <input
-          value={state.answer || ''}
+          value={node.id}
+          disabled
+          style={{
+            width: '100%',
+            padding: '8px 10px',
+            background: '#0f0f1e',
+            border: '1px solid #3a3a5a',
+            borderRadius: 6,
+            color: '#888',
+            boxSizing: 'border-box',
+          }}
+        />
+      </div>
+
+      <div>
+        <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 4 }}>Answer</label>
+        <textarea
+          value={node.answer || ''}
           onChange={e => onUpdate({ answer: e.target.value })}
-          placeholder="Resposta automática do NLU"
-          style={{ width: '100%', padding: '8px 10px', background: '#0f0f1e', border: '1px solid #3a3a5a', borderRadius: 6, color: '#fff', boxSizing: 'border-box' }}
+          rows={4}
+          placeholder={'Use {{contexto.variavel}} e {{entity}} para templates.'}
+          style={{
+            width: '100%',
+            padding: '8px 10px',
+            background: '#0f0f1e',
+            border: '1px solid #3a3a5a',
+            borderRadius: 6,
+            color: '#fff',
+            resize: 'vertical',
+            boxSizing: 'border-box',
+            fontFamily: 'monospace',
+            fontSize: 12,
+          }}
         />
       </div>
 
-      <button onClick={onDelete} style={{ marginTop: 8, padding: '8px 0', background: '#ff4a6e22', border: '1px solid #ff4a6e', borderRadius: 6, color: '#ff4a6e', cursor: 'pointer', fontSize: 13 }}>Remover State</button>
+      <div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+          <input
+            type="checkbox"
+            checked={!!node.terminal}
+            onChange={e => onUpdate({ terminal: e.target.checked })}
+          />
+          <span>Terminal (encerra a conversa)</span>
+        </label>
+      </div>
+
+      {/* Edges list */}
+      <div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 8,
+          }}
+        >
+          <label style={{ fontSize: 11, color: '#888' }}>Edges</label>
+          <button
+            onClick={addEdge}
+            style={{
+              padding: '3px 10px',
+              background: '#4a9eff33',
+              border: '1px solid #4a9eff',
+              borderRadius: 4,
+              color: '#4a9eff',
+              cursor: 'pointer',
+              fontSize: 11,
+            }}
+          >
+            + Edge
+          </button>
+        </div>
+
+        {node.edges.length === 0 && (
+          <p style={{ color: '#555', fontSize: 12 }}>
+            Sem edges. Conecte este nó a outros via drag no canvas, ou adicione um edge aqui.
+          </p>
+        )}
+
+        {node.edges.map((edge, i) => {
+          let whenError: string | null = null;
+          if (edge.when.startsWith('intent:')) {
+            const intentName = edge.when.slice('intent:'.length);
+            if (intentName === 'none') {
+              whenError = null; // 'none' is allowed (reserved)
+            }
+          }
+          return (
+            <div
+              key={i}
+              style={{
+                background: '#0f0f1e',
+                border: '1px solid #2a2a4a',
+                borderRadius: 6,
+                padding: 8,
+                marginBottom: 8,
+              }}
+            >
+              <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
+                <input
+                  value={edge.when}
+                  onChange={e => updateEdge(i, { when: e.target.value })}
+                  placeholder="intent:agendar"
+                  style={{
+                    flex: 1,
+                    padding: '6px 8px',
+                    background: '#1a1a2e',
+                    border: '1px solid #3a3a5a',
+                    borderRadius: 4,
+                    color: '#fff',
+                    fontSize: 12,
+                    fontFamily: 'monospace',
+                  }}
+                />
+                <button
+                  onClick={() => removeEdge(i)}
+                  style={{
+                    padding: '4px 8px',
+                    background: 'none',
+                    border: '1px solid #3a3a5a',
+                    borderRadius: 4,
+                    color: '#ff4a6e',
+                    cursor: 'pointer',
+                    fontSize: 12,
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+              {whenError && (
+                <div style={{ fontSize: 11, color: '#ff4a6e', marginBottom: 6 }}>{whenError}</div>
+              )}
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: '#888' }}>→</span>
+                <select
+                  value={edge.to}
+                  onChange={e => updateEdge(i, { to: e.target.value })}
+                  style={{
+                    flex: 1,
+                    padding: '6px 8px',
+                    background: '#1a1a2e',
+                    border: '1px solid #3a3a5a',
+                    borderRadius: 4,
+                    color: '#fff',
+                    fontSize: 12,
+                  }}
+                >
+                  <option value="">Selecione destino…</option>
+                  {nodes.filter(n => n.id !== node.id).map(n => (
+                    <option key={n.id} value={n.id}>
+                      {n.label} ({n.id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 10, color: '#666', display: 'block', marginBottom: 2 }}>
+                  set (opcional, JSON)
+                </label>
+                <textarea
+                  value={
+                    edge.set
+                      ? Object.entries(edge.set)
+                          .map(([k, v]) => `${JSON.stringify(k)}: ${JSON.stringify(v)}`)
+                          .join(',\n')
+                      : ''
+                  }
+                  onChange={e => {
+                    const raw = e.target.value.trim();
+                    if (!raw) {
+                      updateEdge(i, { set: undefined });
+                      return;
+                    }
+                    try {
+                      const parsed = JSON.parse('{' + raw + '}');
+                      updateEdge(i, { set: parsed });
+                    } catch {
+                      // ignore parse errors until valid
+                    }
+                  }}
+                  rows={2}
+                  placeholder={'ex:\n"nome": "{{entity}}"'}
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    background: '#1a1a2e',
+                    border: '1px solid #3a3a5a',
+                    borderRadius: 4,
+                    color: '#fff',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Helper: list of declared intents/entities for reference */}
+        {(entities.length > 0 || node.edges.some(e => e.when.startsWith('intent:'))) && (
+          <div
+            style={{
+              background: '#0f0f1e',
+              border: '1px solid #2a2a4a',
+              borderRadius: 6,
+              padding: 8,
+              fontSize: 11,
+              color: '#888',
+            }}
+          >
+            <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Referência rápida:</div>
+            {entities.length > 0 && (
+              <div>
+                <strong>entities:</strong>{' '}
+                {entities.map(e => e.name).filter(Boolean).join(', ') || '—'}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={onDelete}
+        disabled={isFallback}
+        style={{
+          marginTop: 8,
+          padding: '8px 0',
+          background: '#ff4a6e22',
+          border: '1px solid #ff4a6e',
+          borderRadius: 6,
+          color: '#ff4a6e',
+          cursor: isFallback ? 'not-allowed' : 'pointer',
+          fontSize: 13,
+          opacity: isFallback ? 0.5 : 1,
+        }}
+      >
+        {isFallback ? 'Nó reservado (não pode remover)' : 'Remover Nó'}
+      </button>
     </div>
   );
 };
 
 const IntentRow: React.FC<{
-  intent: { name: string; phrases: string[]; answer: string };
-  onUpdate: (intent: { name: string; phrases: string[]; answer: string }) => void;
+  intent: IntentDef;
+  onUpdate: (intent: IntentDef) => void;
   onDelete: () => void;
 }> = ({ intent, onUpdate, onDelete }) => {
   const [expanded, setExpanded] = useState(false);
@@ -634,20 +1434,66 @@ const IntentRow: React.FC<{
     setPhraseInput('');
   };
 
+  const isReservedNone = intent.name.trim() === 'none';
+
   return (
-    <div style={{ background: '#0f0f1e', border: '1px solid #2a2a4a', borderRadius: 8, padding: 12, marginBottom: 8 }}>
+    <div
+      style={{
+        background: '#0f0f1e',
+        border: `1px solid ${isReservedNone ? '#ff4a6e' : '#2a2a4a'}`,
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 8,
+      }}
+    >
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <input
           value={intent.name}
           onChange={e => onUpdate({ ...intent, name: e.target.value })}
           placeholder="intent.name"
-          style={{ flex: 1, padding: '6px 10px', background: '#1a1a2e', border: '1px solid #3a3a5a', borderRadius: 4, color: '#fff', fontSize: 13 }}
+          style={{
+            flex: 1,
+            padding: '6px 10px',
+            background: '#1a1a2e',
+            border: '1px solid #3a3a5a',
+            borderRadius: 4,
+            color: '#fff',
+            fontSize: 13,
+          }}
         />
-        <button onClick={() => setExpanded(!expanded)} style={{ padding: '4px 8px', background: 'none', border: '1px solid #3a3a5a', borderRadius: 4, color: '#888', cursor: 'pointer', fontSize: 11 }}>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            padding: '4px 8px',
+            background: 'none',
+            border: '1px solid #3a3a5a',
+            borderRadius: 4,
+            color: '#888',
+            cursor: 'pointer',
+            fontSize: 11,
+          }}
+        >
           {intent.phrases.length} phrases
         </button>
-        <button onClick={onDelete} style={{ padding: '4px 8px', background: 'none', border: 'none', color: '#ff4a6e', cursor: 'pointer', fontSize: 13 }}>✕</button>
+        <button
+          onClick={onDelete}
+          style={{
+            padding: '4px 8px',
+            background: 'none',
+            border: 'none',
+            color: '#ff4a6e',
+            cursor: 'pointer',
+            fontSize: 13,
+          }}
+        >
+          ✕
+        </button>
       </div>
+      {isReservedNone && (
+        <div style={{ fontSize: 11, color: '#ff4a6e', marginTop: 6 }}>
+          ⚠️ "none" é reservado (fallback). Renomeie para salvar.
+        </div>
+      )}
 
       {expanded && (
         <div style={{ marginTop: 12 }}>
@@ -657,23 +1503,173 @@ const IntentRow: React.FC<{
               onChange={e => setPhraseInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addPhrase()}
               placeholder="Nova phrase…"
-              style={{ flex: 1, padding: '6px 10px', background: '#1a1a2e', border: '1px solid #3a3a5a', borderRadius: 4, color: '#fff', fontSize: 12 }}
+              style={{
+                flex: 1,
+                padding: '6px 10px',
+                background: '#1a1a2e',
+                border: '1px solid #3a3a5a',
+                borderRadius: 4,
+                color: '#fff',
+                fontSize: 12,
+              }}
             />
-            <button onClick={addPhrase} style={{ padding: '6px 12px', background: '#4a9eff', border: 'none', borderRadius: 4, color: '#fff', cursor: 'pointer', fontSize: 12 }}>Add</button>
+            <button
+              onClick={addPhrase}
+              style={{
+                padding: '6px 12px',
+                background: '#4a9eff',
+                border: 'none',
+                borderRadius: 4,
+                color: '#fff',
+                cursor: 'pointer',
+                fontSize: 12,
+              }}
+            >
+              Add
+            </button>
           </div>
           {intent.phrases.map((p, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: '#1a1a2e', borderRadius: 4, marginBottom: 4 }}>
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '4px 8px',
+                background: '#1a1a2e',
+                borderRadius: 4,
+                marginBottom: 4,
+              }}
+            >
               <span style={{ fontSize: 12, color: '#aaa' }}>{p}</span>
-              <button onClick={() => onUpdate({ ...intent, phrases: intent.phrases.filter((_, idx) => idx !== i) })} style={{ background: 'none', border: 'none', color: '#ff4a6e', cursor: 'pointer', fontSize: 11 }}>✕</button>
+              <button
+                onClick={() =>
+                  onUpdate({ ...intent, phrases: intent.phrases.filter((_, idx) => idx !== i) })
+                }
+                style={{ background: 'none', border: 'none', color: '#ff4a6e', cursor: 'pointer', fontSize: 11 }}
+              >
+                ✕
+              </button>
             </div>
           ))}
-          <input
-            value={intent.answer}
-            onChange={e => onUpdate({ ...intent, answer: e.target.value })}
-            placeholder="Resposta do intent…"
-            style={{ width: '100%', padding: '6px 10px', background: '#1a1a2e', border: '1px solid #3a3a5a', borderRadius: 4, color: '#fff', fontSize: 12, marginTop: 8, boxSizing: 'border-box' }}
-          />
         </div>
+      )}
+    </div>
+  );
+};
+
+const EntityRow: React.FC<{
+  entity: EntityDef;
+  onUpdate: (entity: EntityDef) => void;
+  onDelete: () => void;
+}> = ({ entity, onUpdate, onDelete }) => {
+  const valuesText = entity.type === 'enum' && entity.values ? entity.values.join(', ') : '';
+
+  return (
+    <div
+      style={{
+        background: '#0f0f1e',
+        border: '1px solid #2a2a4a',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 8,
+      }}
+    >
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
+        <input
+          value={entity.name}
+          onChange={e => onUpdate({ ...entity, name: e.target.value } as EntityDef)}
+          placeholder="entity.name"
+          style={{
+            flex: 1,
+            padding: '6px 10px',
+            background: '#1a1a2e',
+            border: '1px solid #3a3a5a',
+            borderRadius: 4,
+            color: '#fff',
+            fontSize: 13,
+          }}
+        />
+        <select
+          value={entity.type}
+          onChange={e =>
+            onUpdate({
+              name: entity.name,
+              type: e.target.value as 'enum' | 'regex',
+              values: e.target.value === 'enum' ? entity.values || [] : undefined,
+              pattern: e.target.value === 'regex' ? entity.pattern || '' : undefined,
+            } as EntityDef)
+          }
+          style={{
+            padding: '6px 8px',
+            background: '#1a1a2e',
+            border: '1px solid #3a3a5a',
+            borderRadius: 4,
+            color: '#fff',
+            fontSize: 12,
+          }}
+        >
+          <option value="enum">enum</option>
+          <option value="regex">regex</option>
+        </select>
+        <button
+          onClick={onDelete}
+          style={{
+            padding: '4px 8px',
+            background: 'none',
+            border: 'none',
+            color: '#ff4a6e',
+            cursor: 'pointer',
+            fontSize: 13,
+          }}
+        >
+          ✕
+        </button>
+      </div>
+      {entity.type === 'enum' ? (
+        <textarea
+          value={valuesText}
+          onChange={e =>
+            onUpdate({
+              name: entity.name,
+              type: 'enum',
+              values: e.target.value
+                .split(',')
+                .map(v => v.trim())
+                .filter(Boolean),
+            })
+          }
+          rows={2}
+          placeholder="valores separados por vírgula: corte, barba, escova"
+          style={{
+            width: '100%',
+            padding: '6px 10px',
+            background: '#1a1a2e',
+            border: '1px solid #3a3a5a',
+            borderRadius: 4,
+            color: '#fff',
+            resize: 'vertical',
+            boxSizing: 'border-box',
+            fontSize: 12,
+          }}
+        />
+      ) : (
+        <input
+          value={entity.pattern || ''}
+          onChange={e => onUpdate({ name: entity.name, type: 'regex', pattern: e.target.value })}
+          placeholder="regex pattern, ex: \d{11}"
+          style={{
+            width: '100%',
+            padding: '6px 10px',
+            background: '#1a1a2e',
+            border: '1px solid #3a3a5a',
+            borderRadius: 4,
+            color: '#fff',
+            boxSizing: 'border-box',
+            fontSize: 12,
+            fontFamily: 'monospace',
+          }}
+        />
       )}
     </div>
   );

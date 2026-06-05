@@ -12,27 +12,9 @@ export async function initNLU() {
       nlu: { log: false },
     });
 
-    // Intent base: saudações
-    manager.addDocument('pt', 'oi', 'greetings.hello');
-    manager.addDocument('pt', 'olá', 'greetings.hello');
-    manager.addDocument('pt', 'hey', 'greetings.hello');
-    manager.addDocument('pt', 'bom dia', 'greetings.hello');
-    manager.addDocument('pt', 'boa tarde', 'greetings.hello');
-    manager.addDocument('pt', 'boa noite', 'greetings.hello');
-    manager.addDocument('pt', 'tchau', 'greetings.bye');
-    manager.addDocument('pt', 'adeus', 'greetings.bye');
-    manager.addDocument('pt', 'até logo', 'greetings.bye');
-
-    // Intent base: suporte
-    manager.addDocument('pt', 'ajuda', 'support.help');
-    manager.addDocument('pt', 'não entendi', 'support.help');
-    manager.addDocument('pt', 'problema', 'support.issue');
-
-    // Answers
-    manager.addAnswer('pt', 'greetings.hello', 'Olá! Como posso ajudar?');
-    manager.addAnswer('pt', 'greetings.bye', 'Até logo! 👋');
-    manager.addAnswer('pt', 'support.help', 'Claro! Como posso te ajudar?');
-    manager.addAnswer('pt', 'support.issue', 'Entendi. Me conta mais sobre o problema.');
+    // Nota: intents base removidas. O flow ativo é a única fonte de intents.
+    // O NLU apenas classifica intent; a resposta vem do grafo de estados (FSM).
+    // Se o flow não tiver intents, o NLU não sabe classificar nada (vai dar None).
 
     await manager.train();
     // save() sempre grava no CWD — usa chdir('/tmp') como workaround
@@ -57,9 +39,7 @@ export async function trainFromFlow(definition: {
     for (const phrase of intent.phrases) {
       manager.addDocument('pt', phrase, intent.name);
     }
-    if (intent.answer) {
-      manager.addAnswer('pt', intent.name, intent.answer);
-    }
+    // intent.answer é ignorado deliberadamente: a resposta vem do FSM, não do NLU.
   }
 
   await manager.train();

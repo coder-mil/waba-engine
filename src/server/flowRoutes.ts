@@ -18,8 +18,18 @@ router.get('/flows', async (req, res) => {
   }
 });
 
-// GET /api/flows/:id → detalhar um flow
-router.get('/flows/:id', async (req, res) => {
+// GET /api/flows/active → flow ativo (definido ANTES de /:id para evitar conflito de roteamento)
+router.get('/flows/active', async (req, res) => {
+  try {
+    const flow = await getActiveFlow();
+    res.json({ flow });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/flows/:id → detalhar um flow (com regex para garantir que :id é numérico)
+router.get('/flows/:id(\\d+)', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM flows WHERE id = $1', [req.params.id]);
     if (!result.rows[0]) return res.status(404).json({ error: 'Flow não encontrado' });
@@ -92,16 +102,6 @@ router.post('/flows/:id/activate', async (req, res) => {
     );
     if (!result.rows[0]) return res.status(404).json({ error: 'Flow não encontrado' });
     res.json({ flow: result.rows[0] });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/flows/active → flow ativo
-router.get('/flows/active', async (req, res) => {
-  try {
-    const flow = await getActiveFlow();
-    res.json({ flow });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
