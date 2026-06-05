@@ -7,18 +7,41 @@ const fetch = require('node-fetch');
  * Envia mensagem via WhatsApp Business API.
  * Logs completos de request/response para debug de erros.
  */
-export async function sendReply(to: string, message: string): Promise<any> {
+/**
+ * Envia mensagem via WhatsApp Business API.
+ * Logs completos de request/response para debug de erros.
+ * Support Quick Reply Buttons quando passed.
+ */
+export async function sendReply(
+  to: string,
+  message: string,
+  buttons?: Array<{ label: string; value: string }>
+): Promise<any> {
   const url = `https://graph.facebook.com/v25.0/${PHONE_NUMBER_ID}/messages`;
-  const body = {
+
+  let body: any = {
     messaging_product: 'whatsapp',
     to,
-    type: 'text',
-    text: {
-      body: message,
-    },
   };
 
-  console.log(`[WhatsApp API] → Enviando para ${to}: "${message}"`);
+  if (buttons && buttons.length > 0) {
+    body.type = 'interactive';
+    body.interactive = {
+      type: 'button',
+      body: { text: message },
+      action: {
+        buttons: buttons.map(btn => ({
+          type: 'reply',
+          reply: { title: btn.label, id: btn.value },
+        })),
+      },
+    };
+  } else {
+    body.type = 'text';
+    body.text = { body: message };
+  }
+
+  console.log(`[WhatsApp API] → Enviando para ${to}: "${message}"${buttons?.length ? ` [${buttons.length} buttons]` : ''}`);
 
   let resp: any;
   let data: any;
@@ -35,7 +58,6 @@ export async function sendReply(to: string, message: string): Promise<any> {
 
     data = await resp.json().catch(() => ({}));
 
-    // Log da resposta completa
     if (!resp.ok) {
       console.error(`[WhatsApp API] ❌ Erro HTTP ${resp.status}`);
       console.error(`[WhatsApp API] Body:`, JSON.stringify(data, null, 2));
@@ -50,8 +72,6 @@ export async function sendReply(to: string, message: string): Promise<any> {
   } catch (err: any) {
     console.error(`[WhatsApp API] ❌ Exceção na requisição:`);
     console.error(`[WhatsApp API] Erro: ${err.message}`);
-    console.error(`[WhatsApp API] URL: ${url}`);
-    console.error(`[WhatsApp API] To: ${to}, Message: "${message}"`);
     throw err;
   }
 }

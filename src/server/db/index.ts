@@ -50,7 +50,32 @@ export async function initDB() {
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON message_logs(timestamp DESC)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_sessions_last_activity ON user_sessions(last_activity)`);
 
-  console.log('✅ Tabelas de banco criadas');
+  await pool.query(`CREATE TABLE IF NOT EXISTS nlp_flows (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    path VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT DEFAULT '',
+    is_active BOOLEAN DEFAULT FALSE,
+    default_answer TEXT DEFAULT 'Desculpe, não entendi. Pode reformular?',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+  )`);
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS nlp_answers (
+    id SERIAL PRIMARY KEY,
+    flow_id INTEGER REFERENCES nlp_flows(id) ON DELETE CASCADE,
+    question VARCHAR(500) NOT NULL,
+    keywords TEXT[] DEFAULT '{}',
+    answer TEXT NOT NULL,
+    buttons JSONB DEFAULT '[]',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW()
+  )`);
+
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_nlp_flows_path ON nlp_flows(path)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_nlp_answers_flow ON nlp_answers(flow_id)`);
+
+  console.log('✅ Tabelas NLP criadas');
 }
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
@@ -78,6 +103,129 @@ export async function saveMessageLog(data: {
 export async function getUserSession(phone: string) {
   const result = await pool.query('SELECT * FROM user_sessions WHERE phone = $1', [phone]);
   return result.rows[0] || null;
+}
+
+// ─── NLP Flows & Answers ─────────────────────────────────────────────────────
+
+export async function getAllNlpFlows() {
+  const result = await pool.query('SELECT * FROM nlp_flows ORDER BY created_at DESC');
+  return result.rows;
+}
+
+export async function getNlpFlowById(id: number) {
+  const result = await pool.query('SELECT * FROM nlp_flows WHERE id = $1', [id]);
+  return result.rows[0] || null;
+}
+
+export async function getNlpFlowByPath(path: string) {
+  const result = await pool.query('SELECT * FROM nlp_flows WHERE path = $1', [path]);
+  return result.rows[0] || null;
+}
+
+export async function createNlpFlow(data: {
+  name: string;
+  path: string;
+  description?: string;
+  defaultAnswer?: string;
+}) {
+  const result = await pool.query(
+    `INSERT INTO nlp_flows (name, path, description, default_answer)
+     VALUES ($1, $2, $3, $4) RETURNING *`,
+    [data.name, data.path, data.description || '', data.defaultAnswer || 'Desculpe, não entendi. Pode reformular?']
+  );
+  return result.rows[0];
+}
+
+export async function updateNlpFlow(id: number, data: {
+  name?: string;
+  path?: string;
+  description?: string;
+  defaultAnswer?: string;
+}) {
+  const result = await pool.query(
+    `UPDATE nlp_flows SET
+       name = COALESCE($1, name),
+       path = COALESCE($2, path),
+       description = COALESCE($3, description),
+       default_answer = COALESCE($4, default_answer),
+       updated_at = NOW()
+     WHERE id = $5 RETURNING *`,
+    [data.name, data.path, data.description, data.defaultAnswer, id]
+  );
+  return result.rows[0];
+}
+
+export async function deleteNlpFlow(id: number) {
+  await pool.query('DELETE FROM nlp_flows WHERE id = $1', [id]);
+}
+
+export async function activateNlpFlow(id: number) {
+  await pool.query('UPDATE nlp_flows SET is_active = false');
+  const result = await pool.query(
+    'UPDATE nlp_flows SET is_active = true WHERE id = $1 RETURNING *',
+    [id]
+  );
+  return result.rows[0];
+}
+
+export async function getActiveNlpFlows() {
+  const result = await pool.query('SELECT * FROM nlp_flows WHERE is_active = true');
+  return result.rows;
+}
+
+export async function getNlpAnswersByFlow(flowId: number) {
+  const result = await pool.query(
+    'SELECT * FROM nlp_answers WHERE flow_id = $1 ORDER BY created_at DESC',
+    [flowId]
+  );
+  return result.rows;
+}
+
+export async function createNlpAnswer(data: {
+  flowId: number;
+  question: string;
+  keywords: string[];
+  answer: string;
+  buttons?: any[];
+}) {
+  const result = await pool.query(
+    `INSERT INTO nlp_answers (flow_id, question, keywords, answer, buttons)
+     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [data.flowId, data.question, data.keywords, JSON.stringify(data.buttons || [])]
+  );
+  return result.rows[0];
+}
+
+export async function updateNlpAnswer(id: number, data: {
+  question?: string;
+  keywords?: string[];
+  answer?: string;
+  buttons?: any[];
+  isActive?: boolean;
+}) {
+  const result = await pool.query(
+    `UPDATE nlp_answers SET
+       question = COALESCE($1, question),
+       keywords = COALESCE($2, keywords),
+       answer = COALESCE($3, answer),
+       buttons = COALESCE($4, buttons),
+       is_active = COALESCE($5, is_active)
+     WHERE id = $6 RETURNING *`,
+    [data.question, data.keywords, data.answer, data.buttons ? JSON.stringify(data.buttons) : null, data.isActive, id]
+  );
+  return result.rows[0];
+}
+
+export async function deleteNlpAnswer(id: number) {
+  await pool.query('DELETE FROM nlp_answers WHERE id = $1', [id]);
+}
+
+export async function getTrainedAnswers(flowId: number) {
+  const result = await pool.query(
+    'SELECT * FROM nlp_answers WHERE flow_id = $1 AND is_active = true',
+    [flowId]
+  );
+  return result.rows;
 }
 
 export async function upsertUserSession(phone: string, data: {

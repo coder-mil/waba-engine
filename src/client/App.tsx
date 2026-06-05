@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import FlowEditor from './pages/FlowEditor';
 import Dashboard from './pages/Dashboard';
 import Chat from './pages/Chat';
+import NlpQA from './pages/NlpQA';
 
 const Home = () => (
   <div style={{
@@ -29,6 +30,12 @@ const Home = () => (
           icon="🎨"
           title="Flow Editor"
           description="Crie e edite fluxos de conversa com editor visual drag-and-drop"
+        />
+        <NavCard
+          to="/nlp-qa"
+          icon="🤖"
+          title="NLP Q&A"
+          description="Perguntas e Respostas com keywords e botões Quick Reply"
         />
         <NavCard
           to="/dashboard"
@@ -105,6 +112,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/editor" element={<FlowEditor />} />
+        <Route path="/nlp-qa" element={<NlpQA />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -3,8 +3,10 @@ import * as path from 'path';
 import apiRouter from './flowRoutes';
 import webhookRouter from './webhookRoutes';
 import chatRouter from './chatRoutes';
-import { initNLU } from './nlu';
-import { initDB } from './db';
+import nlpRouter from './nlpRoutes';
+import nlpWebhookRouter from './nlpWebhook';
+import { initNLU, trainFromFlow } from './nlu';
+import { initDB, getActiveFlow } from './db';
 
 const app = express();
 
@@ -13,6 +15,8 @@ app.use(express.static('public'));
 app.use('/api', apiRouter);
 app.use(chatRouter);
 app.use(webhookRouter);
+app.use('/api/nlp', nlpRouter);
+app.use('/', nlpWebhookRouter);
 
 // SPA fallback — todas as rotas não-API retornam o index.html
 // para que o React Router (client-side) possahandle as rotas
