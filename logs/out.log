@@ -1,0 +1,450 @@
+2026-06-05T03:25:57: ✅ Tabelas de banco criadas
+2026-06-05T03:25:57: ✅ Database initialized
+2026-06-05T03:25:57: ✅ NLU treinado
+2026-06-05T03:25:57: ✅ NLU initialized
+2026-06-05T03:25:57: Server listening on port: 3000
+2026-06-05T03:27:34: ✅ NLU re-treinado com 7 intents
+2026-06-05T03:28:26: ✅ Tabelas de banco criadas
+2026-06-05T03:28:26: ✅ Database initialized
+2026-06-05T03:28:26: ✅ NLU treinado
+2026-06-05T03:28:26: ✅ NLU initialized
+2026-06-05T03:28:26: Server listening on port: 3000
+2026-06-05T03:28:56: [NLU classifyIntent] text="oi tudo bem" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:28:56: [processMessage] from=web-chat-001 state=saudacao intent=greetings.hello (1.00)
+2026-06-05T03:28:56: [NLU classifyIntent] text="tchau até mais" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:28:56: [processMessage] from=web-chat-001 state=saudacao intent=greetings.bye (1.00)
+2026-06-05T03:28:56: [NLU classifyIntent] text="oi" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:28:56: [processMessage] from=web-chat-001 state=saudacao intent=greetings.hello (1.00)
+2026-06-05T03:28:57: [NLU classifyIntent] text="quero agendar um horário" → intent=None answer=undefined score=1
+2026-06-05T03:28:57: [processMessage] from=web-chat-001 state=saudacao intent=None (1.00)
+2026-06-05T03:28:57: [NLU classifyIntent] text="corte de cabelo" → intent=None answer=undefined score=1
+2026-06-05T03:28:57: [processMessage] from=web-chat-001 state=saudacao intent=None (1.00)
+2026-06-05T03:28:57: [NLU classifyIntent] text="amanhã de manhã" → intent=None answer=undefined score=1
+2026-06-05T03:28:57: [processMessage] from=web-chat-001 state=saudacao intent=None (1.00)
+2026-06-05T03:28:57: [NLU classifyIntent] text="11999998888" → intent=None answer=undefined score=1
+2026-06-05T03:28:57: [processMessage] from=web-chat-001 state=saudacao intent=None (1.00)
+2026-06-05T03:28:57: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:28:57: [processMessage] from=web-chat-001 state=saudacao intent=greetings.bye (1.00)
+2026-06-05T03:28:57: [NLU classifyIntent] text="oi" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:28:57: [processMessage] from=web-chat-001 state=saudacao intent=greetings.hello (1.00)
+2026-06-05T03:28:57: [NLU classifyIntent] text="qual o preço do corte" → intent=None answer=undefined score=1
+2026-06-05T03:28:57: [processMessage] from=web-chat-001 state=saudacao intent=None (1.00)
+2026-06-05T03:28:57: [NLU classifyIntent] text="quais os serviços que vocês fazem" → intent=None answer=undefined score=1
+2026-06-05T03:28:57: [processMessage] from=web-chat-001 state=saudacao intent=None (1.00)
+2026-06-05T03:28:57: [NLU classifyIntent] text="asdfgh" → intent=None answer=undefined score=1
+2026-06-05T03:28:57: [processMessage] from=web-chat-001 state=saudacao intent=None (1.00)
+2026-06-05T03:28:57: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:28:57: [processMessage] from=web-chat-001 state=saudacao intent=greetings.bye (1.00)
+2026-06-05T03:30:04: [NLU classifyIntent] text="quero agendar um horario" → intent=None answer=undefined score=1
+2026-06-05T03:30:04: [NLU classifyIntent] text="qual o preco do corte" → intent=None answer=undefined score=1
+2026-06-05T03:30:04: [NLU classifyIntent] text="oi tudo bem" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:30:04: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:31:27: ✅ NLU re-treinado com 7 intents
+2026-06-05T03:31:28: [NLU classifyIntent] text="quero agendar um horario" → intent=agendar answer=undefined score=1
+2026-06-05T03:31:28: [NLU classifyIntent] text="qual o preco do corte" → intent=preco answer=undefined score=1
+2026-06-05T03:31:52: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=saudacao intent=greetings.bye (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="oi" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=saudacao intent=greetings.hello (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="quero agendar um horário" → intent=agendar answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=saudacao intent=agendar (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="corte de cabelo" → intent=None answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=pedir_servico intent=None (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="amanhã" → intent=None answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="11 99999-8888" → intent=None answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=confirmar intent=greetings.bye (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="oi" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=confirmar intent=greetings.hello (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="qual o preço do corte" → intent=preco answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=confirmar intent=preco (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="quais os serviços vocês fazem" → intent=None answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=confirmar intent=None (1.00)
+2026-06-05T03:31:52: [NLU classifyIntent] text="asdfgh" → intent=None answer=undefined score=1
+2026-06-05T03:31:52: [processMessage] from=web-chat-001 state=confirmar intent=None (1.00)
+2026-06-05T03:31:53: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:31:53: [processMessage] from=web-chat-001 state=confirmar intent=greetings.bye (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=saudacao (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=greetings.bye (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="oi" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=greetings.hello (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="quero agendar um horário" → intent=agendar answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=agendar (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="barba" → intent=None answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=pedir_servico intent=None (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="sábado" → intent=None answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="11 98888-7777" → intent=None answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=greetings.bye (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="oi" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=greetings.hello (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="qual o preço do corte" → intent=preco answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=preco (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="me diz os serviços" → intent=None answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=None (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="me passa a localização" → intent=None answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=None (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="asdfgh" → intent=None answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=None (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=greetings.bye (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="oi" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=greetings.hello (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="quero agendar um horário" → intent=agendar answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=confirmar intent=agendar (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="corte" → intent=None answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=pedir_servico intent=None (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="na verdade quero saber o preço" → intent=None answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=pedir_data intent=greetings.bye (1.00)
+2026-06-05T03:32:19: [NLU classifyIntent] text="oi" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:32:19: [processMessage] from=web-chat-001 state=pedir_data intent=greetings.hello (1.00)
+2026-06-05T03:32:59: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T03:32:59: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T03:32:59: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:32:59: [processMessage] from=web-chat-001 state=saudacao intent=greetings.bye (1.00)
+2026-06-05T03:32:59: [NLU classifyIntent] text="oi" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:32:59: [processMessage] from=web-chat-001 state=saudacao intent=greetings.hello (1.00)
+2026-06-05T03:32:59: [NLU classifyIntent] text="quero agendar um horário" → intent=agendar answer=undefined score=1
+2026-06-05T03:32:59: [processMessage] from=web-chat-001 state=saudacao intent=agendar (1.00)
+2026-06-05T03:32:59: [NLU classifyIntent] text="corte de cabelo" → intent=None answer=undefined score=1
+2026-06-05T03:32:59: [processMessage] from=web-chat-001 state=pedir_servico intent=None (1.00)
+2026-06-05T03:32:59: [NLU classifyIntent] text="amanhã" → intent=None answer=undefined score=1
+2026-06-05T03:32:59: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T03:32:59: [NLU classifyIntent] text="11 99999-8888" → intent=None answer=undefined score=1
+2026-06-05T03:32:59: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T03:32:59: [NLU classifyIntent] text="asdfgh" → intent=None answer=undefined score=1
+2026-06-05T03:32:59: [processMessage] from=web-chat-001 state=confirmar intent=None (1.00)
+2026-06-05T03:34:14: ✅ Tabelas de banco criadas
+2026-06-05T03:34:14: ✅ Database initialized
+2026-06-05T03:34:14: ✅ NLU treinado
+2026-06-05T03:34:14: ✅ NLU initialized
+2026-06-05T03:34:14: Server listening on port: 3000
+2026-06-05T03:34:16: ✅ NLU re-treinado com 7 intents
+2026-06-05T03:34:18: [NLU classifyIntent] text="oi tudo bem" → intent=greetings.hello answer=undefined score=0.5324921800015731
+2026-06-05T03:34:18: [NLU classifyIntent] text="olá bom dia" → intent=greetings.hello answer=undefined score=0.9937079605050138
+2026-06-05T03:34:18: [NLU classifyIntent] text="tchau" → intent=greetings.bye answer=undefined score=1
+2026-06-05T03:34:18: [NLU classifyIntent] text="valeu" → intent=despedida answer=undefined score=1
+2026-06-05T03:34:18: [NLU classifyIntent] text="quero agendar um horário" → intent=agendar answer=undefined score=1
+2026-06-05T03:34:18: [NLU classifyIntent] text="qual o preço do corte" → intent=preco answer=undefined score=1
+2026-06-05T03:34:45: ✅ Tabelas de banco criadas
+2026-06-05T03:34:45: ✅ Database initialized
+2026-06-05T03:34:45: ✅ NLU treinado
+2026-06-05T03:34:45: ✅ NLU initialized
+2026-06-05T03:34:45: Server listening on port: 3000
+2026-06-05T03:34:46: ✅ NLU re-treinado com 7 intents
+2026-06-05T03:34:48: [NLU classifyIntent] text="oi tudo bem" → intent=greetings.hello answer=undefined score=0.6585466354945567
+2026-06-05T03:34:49: [NLU classifyIntent] text="olá bom dia" → intent=greetings.hello answer=undefined score=0.9995321755898342
+2026-06-05T03:34:49: [NLU classifyIntent] text="eai mano" → intent=saudacao answer=undefined score=1
+2026-06-05T03:34:49: [NLU classifyIntent] text="fala galera" → intent=saudacao answer=undefined score=0.8342193764142705
+2026-06-05T03:34:49: [NLU classifyIntent] text="boa tarde" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:34:49: [NLU classifyIntent] text="hey" → intent=greetings.hello answer=undefined score=1
+2026-06-05T03:35:30: ✅ Tabelas de banco criadas
+2026-06-05T03:35:30: ✅ Database initialized
+2026-06-05T03:35:30: ✅ NLU treinado
+2026-06-05T03:35:30: ✅ NLU initialized
+2026-06-05T03:35:30: Server listening on port: 3000
+2026-06-05T03:35:31: ✅ NLU re-treinado com 7 intents
+2026-06-05T03:35:33: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T03:35:33: [NLU classifyIntent] text="olá bom dia" → intent=saudacao answer=undefined score=1
+2026-06-05T03:35:33: [NLU classifyIntent] text="tchau" → intent=despedida answer=undefined score=1
+2026-06-05T03:35:33: [NLU classifyIntent] text="valeu" → intent=despedida answer=undefined score=1
+2026-06-05T03:35:33: [NLU classifyIntent] text="quero agendar" → intent=agendar answer=undefined score=0.9962573761186979
+2026-06-05T03:35:33: [NLU classifyIntent] text="qual o preço" → intent=preco answer=undefined score=1
+2026-06-05T03:35:55: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="tchau" → intent=despedida answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=saudacao intent=despedida (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="tchau" → intent=despedida answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=despedida intent=despedida (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="oi" → intent=saudacao answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="quero agendar um horário na barbearia" → intent=agendar answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=saudacao intent=agendar (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="corte" → intent=agendar answer=undefined score=0.6556725582197465
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=pedir_servico intent=agendar (0.66)
+2026-06-05T03:35:55: [NLU classifyIntent] text="amanhã" → intent=None answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="11 98888-7777" → intent=None answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="tchau" → intent=despedida answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=confirmar intent=despedida (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="oi" → intent=saudacao answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="qual o preço do corte na dometts" → intent=preco answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=saudacao intent=preco (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="o que vocês oferecem de serviço" → intent=servicos answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=preco intent=servicos (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="onde fica a barbearia" → intent=localizacao answer=undefined score=0.9029902709140002
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=preco intent=localizacao (0.90)
+2026-06-05T03:35:55: [NLU classifyIntent] text="asdfgh jkl" → intent=None answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=preco intent=None (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="tchau" → intent=despedida answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=preco intent=despedida (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="oi" → intent=saudacao answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T03:35:55: [NLU classifyIntent] text="tchau" → intent=despedida answer=undefined score=1
+2026-06-05T03:35:55: [processMessage] from=web-chat-001 state=saudacao intent=despedida (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="oi" → intent=saudacao answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="qual o preço do corte na dometts" → intent=preco answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=saudacao intent=preco (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="o que vocês oferecem de serviço" → intent=servicos answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=preco intent=servicos (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="tchau" → intent=despedida answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=preco intent=despedida (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="oi" → intent=saudacao answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="qual o preço do corte na dometts" → intent=preco answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=saudacao intent=preco (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="quero agendar um horário na barbearia" → intent=agendar answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=preco intent=agendar (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="corte" → intent=agendar answer=undefined score=0.6556725582197465
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=pedir_servico intent=agendar (0.66)
+2026-06-05T03:36:52: [NLU classifyIntent] text="tchau" → intent=despedida answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=pedir_data intent=despedida (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="oi" → intent=saudacao answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="quero agendar um horário na barbearia" → intent=agendar answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=saudacao intent=agendar (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="barba" → intent=preco answer=undefined score=0.5531517179150448
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=pedir_servico intent=preco (0.55)
+2026-06-05T03:36:52: [NLU classifyIntent] text="sábado" → intent=None answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T03:36:52: [NLU classifyIntent] text="11 7777-6666" → intent=None answer=undefined score=1
+2026-06-05T03:36:52: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T03:37:18: 📩 5511988887777: oi
+2026-06-05T03:37:18: [NLU classifyIntent] text="oi" → intent=saudacao answer=undefined score=1
+2026-06-05T03:37:18: [processMessage] from=5511988887777 state=saudacao intent=saudacao (1.00)
+2026-06-05T03:37:18: [WhatsApp API] → Enviando para 5511988887777: "Olá! 👋 Bem-vindo à Dometts Barbershop. Posso agendar, dar preços ou tirar dúvidas. Como posso ajudar?"
+2026-06-05T03:37:18: 📤 → 5511988887777: Olá! 👋 Bem-vindo à Dometts Barbershop. Posso agendar, dar preços ou tirar dúvidas. Como posso ajudar?
+2026-06-05T03:40:14: ✅ Tabelas de banco criadas
+2026-06-05T03:40:14: ✅ Database initialized
+2026-06-05T03:40:14: ✅ NLU treinado
+2026-06-05T03:40:14: ✅ NLU initialized
+2026-06-05T03:40:14: Server listening on port: 3000
+2026-06-05T03:40:16: [NLU classifyIntent] text="oi" → intent=None answer=undefined score=1
+2026-06-05T03:40:16: [processMessage] from=web-chat-001 state=confirmar intent=None (1.00)
+2026-06-05T03:40:29: ✅ NLU re-treinado com 7 intents
+2026-06-05T03:40:29: [NLU classifyIntent] text="oi tudo bem" → intent=None answer=undefined score=1
+2026-06-05T03:40:29: [NLU classifyIntent] text="quero agendar" → intent=None answer=undefined score=1
+2026-06-05T03:40:29: [NLU classifyIntent] text="tchau" → intent=None answer=undefined score=1
+2026-06-05T03:40:29: [NLU classifyIntent] text="qual o preço" → intent=None answer=undefined score=1
+2026-06-05T03:40:38: ✅ NLU re-treinado com 7 intents
+2026-06-05T03:40:38: ✅ NLU re-treinado com 7 intents
+2026-06-05T03:40:38: [NLU classifyIntent] text="oi tudo bem" → intent=None answer=undefined score=1
+2026-06-05T03:40:38: [NLU classifyIntent] text="quero agendar" → intent=None answer=undefined score=1
+2026-06-05T03:40:38: [NLU classifyIntent] text="tchau" → intent=None answer=undefined score=1
+2026-06-05T03:43:09: ✅ Tabelas de banco criadas
+2026-06-05T03:43:09: ✅ Database initialized
+2026-06-05T03:43:09: ✅ NLU treinado
+2026-06-05T03:43:09: ✅ NLU initialized
+2026-06-05T03:43:09: Server listening on port: 3000
+2026-06-05T03:43:10: ✅ NLU re-treinado com 7 intents
+2026-06-05T03:43:13: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T03:43:25: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T03:43:26: [NLU classifyIntent] text="quero agendar um horario na barbearia" → intent=agendar answer=undefined score=1
+2026-06-05T03:43:26: [NLU classifyIntent] text="tchau" → intent=despedida answer=undefined score=1
+2026-06-05T03:43:26: [NLU classifyIntent] text="qual o preco do corte na dometts" → intent=preco answer=undefined score=1
+2026-06-05T03:43:26: [NLU classifyIntent] text="asdfgh jkl" → intent=None answer=undefined score=1
+2026-06-05T03:43:57: ✅ Tabelas de banco criadas
+2026-06-05T03:43:57: ✅ Database initialized
+2026-06-05T03:43:57: ✅ NLU treinado
+2026-06-05T03:43:57: ✅ NLU initialized
+2026-06-05T03:43:57: Server listening on port: 3000
+2026-06-05T03:43:58: ✅ NLU re-treinado com 7 intents
+2026-06-05T04:29:21: ✅ Tabelas de banco criadas
+2026-06-05T04:29:21: ✅ Database initialized
+2026-06-05T04:29:21: ✅ NLU treinado
+2026-06-05T04:29:21: ✅ NLU initialized
+2026-06-05T04:29:21: Server listening on port: 3000
+2026-06-05T04:29:23: ✅ NLU re-treinado com 12 intents
+2026-06-05T04:29:24: ✅ NLU re-treinado com 12 intents
+2026-06-05T04:29:26: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:29:26: [NLU classifyIntent] text="quero agendar" → intent=agendar answer=undefined score=0.9843879745349282
+2026-06-05T04:29:26: [NLU classifyIntent] text="menu" → intent=menu answer=undefined score=1
+2026-06-05T04:29:26: [NLU classifyIntent] text="confirmar" → intent=confirmar_agendamento answer=undefined score=1
+2026-06-05T04:29:26: [NLU classifyIntent] text="sim" → intent=confirmar_agendamento answer=undefined score=1
+2026-06-05T04:29:26: [NLU classifyIntent] text="cancelar" → intent=cancelar answer=undefined score=1
+2026-06-05T04:29:26: [NLU classifyIntent] text="mudar" → intent=alterar answer=undefined score=1
+2026-06-05T04:29:26: [NLU classifyIntent] text="manhã" → intent=horario answer=undefined score=1
+2026-06-05T04:29:27: [NLU classifyIntent] text="14h" → intent=horario answer=undefined score=1
+2026-06-05T04:29:27: [NLU classifyIntent] text="tchau" → intent=despedida answer=undefined score=1
+2026-06-05T04:29:27: [NLU classifyIntent] text="asdfgh" → intent=None answer=undefined score=1
+2026-06-05T04:29:48: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="quero agendar" → intent=agendar answer=undefined score=0.9843879745349282
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=saudacao intent=agendar (0.98)
+2026-06-05T04:29:48: [NLU classifyIntent] text="corte" → intent=agendar answer=undefined score=0.6875224500789561
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=pedir_servico intent=agendar (0.69)
+2026-06-05T04:29:48: [NLU classifyIntent] text="amanhã" → intent=None answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="14h" → intent=horario answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=pedir_horario intent=horario (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="11 99999-8888" → intent=None answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="sim" → intent=confirmar_agendamento answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=confirmar intent=confirmar_agendamento (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="quero agendar" → intent=agendar answer=undefined score=0.9843879745349282
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=saudacao intent=agendar (0.98)
+2026-06-05T04:29:48: [NLU classifyIntent] text="barba" → intent=preco answer=undefined score=0.6671389459652538
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=pedir_servico intent=preco (0.67)
+2026-06-05T04:29:48: [NLU classifyIntent] text="sábado" → intent=None answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="tarde" → intent=horario answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=pedir_horario intent=horario (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="11 88888-7777" → intent=None answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="cancelar" → intent=cancelar answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=confirmar intent=cancelar (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="qual o preço do corte" → intent=preco answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=saudacao intent=preco (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="menu" → intent=menu answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=preco intent=menu (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="asdfghjkl" → intent=None answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=saudacao intent=None (1.00)
+2026-06-05T04:29:48: [NLU classifyIntent] text="menu" → intent=menu answer=undefined score=1
+2026-06-05T04:29:48: [processMessage] from=web-chat-001 state=saudacao intent=menu (1.00)
+2026-06-05T04:35:00: ✅ Tabelas de banco criadas
+2026-06-05T04:35:00: ✅ Database initialized
+2026-06-05T04:35:00: ✅ NLU treinado
+2026-06-05T04:35:00: ✅ NLU initialized
+2026-06-05T04:35:00: Server listening on port: 3000
+2026-06-05T04:35:01: ✅ NLU re-treinado com 12 intents
+2026-06-05T04:35:02: ✅ NLU re-treinado com 12 intents
+2026-06-05T04:35:22: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:35:22: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="quero agendar" → intent=agendar answer=undefined score=0.9843879745349282
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=saudacao intent=agendar (0.98)
+2026-06-05T04:35:23: [NLU classifyIntent] text="corte" → intent=agendar answer=undefined score=0.6875224500789561
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_servico intent=agendar (0.69)
+2026-06-05T04:35:23: [NLU classifyIntent] text="amanhã" → intent=None answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="14h" → intent=horario answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_horario intent=horario (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="11 99999-8888" → intent=None answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="sim" → intent=confirmar_agendamento answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=confirmar intent=confirmar_agendamento (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="qual o preço do corte" → intent=preco answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=saudacao intent=preco (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="menu" → intent=menu answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=preco intent=menu (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="quero agendar" → intent=agendar answer=undefined score=0.9843879745349282
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=saudacao intent=agendar (0.98)
+2026-06-05T04:35:23: [NLU classifyIntent] text="corte" → intent=agendar answer=undefined score=0.6875224500789561
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_servico intent=agendar (0.69)
+2026-06-05T04:35:23: [NLU classifyIntent] text="amanhã" → intent=None answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="menu" → intent=menu answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_horario intent=menu (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="asdfghjkl" → intent=None answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=saudacao intent=None (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="menu" → intent=menu answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=saudacao intent=menu (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="quero agendar" → intent=agendar answer=undefined score=0.9843879745349282
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=saudacao intent=agendar (0.98)
+2026-06-05T04:35:23: [NLU classifyIntent] text="barba" → intent=preco answer=undefined score=0.6671389459652538
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_servico intent=preco (0.67)
+2026-06-05T04:35:23: [NLU classifyIntent] text="sábado" → intent=None answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="tarde" → intent=horario answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_horario intent=horario (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="11 88888-7777" → intent=None answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T04:35:23: [NLU classifyIntent] text="cancelar" → intent=cancelar answer=undefined score=1
+2026-06-05T04:35:23: [processMessage] from=web-chat-001 state=confirmar intent=cancelar (1.00)
+2026-06-05T04:35:56: [NLU classifyIntent] text="asdfghjkl" → intent=None answer=undefined score=1
+2026-06-05T04:35:56: [NLU classifyIntent] text="palavra quebra perna" → intent=None answer=undefined score=1
+2026-06-05T04:36:10: [NLU classifyIntent] text="asdfghjkl" → intent=None answer=undefined score=1
+2026-06-05T04:37:03: ✅ Tabelas de banco criadas
+2026-06-05T04:37:03: ✅ Database initialized
+2026-06-05T04:37:03: ✅ NLU treinado
+2026-06-05T04:37:03: ✅ NLU initialized
+2026-06-05T04:37:03: ✅ NLU re-treinado com 12 intents
+2026-06-05T04:37:03: ✅ NLU re-treinado com flow ativo: Dometts Barbershop v3
+2026-06-05T04:37:03: Server listening on port: 3000
+2026-06-05T04:37:04: ✅ NLU re-treinado com 12 intents
+2026-06-05T04:37:05: ✅ NLU re-treinado com 12 intents
+2026-06-05T04:38:25: ✅ Tabelas de banco criadas
+2026-06-05T04:38:25: ✅ Database initialized
+2026-06-05T04:38:25: ✅ NLU treinado
+2026-06-05T04:38:25: ✅ NLU initialized
+2026-06-05T04:38:25: ✅ NLU re-treinado com 12 intents
+2026-06-05T04:38:25: ✅ NLU re-treinado com flow ativo: Dometts Barbershop v3
+2026-06-05T04:38:25: Server listening on port: 3000
+2026-06-05T04:38:26: ✅ NLU re-treinado com 12 intents
+2026-06-05T04:38:27: ✅ NLU re-treinado com 12 intents
+2026-06-05T04:39:20: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="quero agendar" → intent=agendar answer=undefined score=0.9844733968191537
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=saudacao intent=agendar (0.98)
+2026-06-05T04:39:20: [NLU classifyIntent] text="corte" → intent=agendar answer=undefined score=0.6875298795844564
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=pedir_servico intent=agendar (0.69)
+2026-06-05T04:39:20: [NLU classifyIntent] text="amanhã" → intent=None answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="14h" → intent=horario answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=pedir_horario intent=horario (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="11 99999-8888" → intent=None answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="sim" → intent=confirmar_agendamento answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=confirmar intent=confirmar_agendamento (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="qual o preço do corte" → intent=preco answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=saudacao intent=preco (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="menu" → intent=menu answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=preco intent=menu (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="asdfghjkl" → intent=None answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=saudacao intent=None (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="menu" → intent=menu answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=fallback intent=menu (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="quero agendar" → intent=agendar answer=undefined score=0.9844733968191537
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=saudacao intent=agendar (0.98)
+2026-06-05T04:39:20: [NLU classifyIntent] text="barba" → intent=preco answer=undefined score=0.6671447133703395
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=pedir_servico intent=preco (0.67)
+2026-06-05T04:39:20: [NLU classifyIntent] text="sábado" → intent=None answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=pedir_data intent=None (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="tarde" → intent=horario answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=pedir_horario intent=horario (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="11 88888-7777" → intent=None answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=pedir_telefone intent=None (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="cancelar" → intent=cancelar answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=confirmar intent=cancelar (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="oi tudo bem" → intent=saudacao answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=saudacao intent=saudacao (1.00)
+2026-06-05T04:39:20: [NLU classifyIntent] text="preço" → intent=preco answer=undefined score=1
+2026-06-05T04:39:20: [processMessage] from=web-chat-001 state=saudacao intent=preco (1.00)
+2026-06-05T04:39:21: [NLU classifyIntent] text="serviços" → intent=servicos answer=undefined score=1
+2026-06-05T04:39:21: [processMessage] from=web-chat-001 state=preco intent=servicos (1.00)
+2026-06-05T04:39:21: [NLU classifyIntent] text="localização" → intent=localizacao answer=undefined score=1
+2026-06-05T04:39:21: [processMessage] from=web-chat-001 state=servicos intent=localizacao (1.00)
+2026-06-05T04:39:21: [NLU classifyIntent] text="menu" → intent=menu answer=undefined score=1
+2026-06-05T04:39:21: [processMessage] from=web-chat-001 state=localizacao intent=menu (1.00)

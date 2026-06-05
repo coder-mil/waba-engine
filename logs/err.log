@@ -1,0 +1,9 @@
+2026-06-05T03:37:18: [WhatsApp API] ❌ Erro HTTP 401
+2026-06-05T03:37:18: [WhatsApp API] Body: {
+2026-06-05T03:37:18:   "error": {
+2026-06-05T03:37:18:     "message": "Invalid OAuth access token - Cannot parse access token",
+2026-06-05T03:37:18:     "type": "OAuthException",
+2026-06-05T03:37:18:     "code": 190,
+2026-06-05T03:37:18:     "fbtrace_id": "AbhBI1cL_DNkw4K1pbvl2l9"
+2026-06-05T03:37:18:   }
+2026-06-05T03:37:18: }

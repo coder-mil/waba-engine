@@ -539,6 +539,80 @@ export default function NlpQA() {
         </div>
       )}
 
+      {/* ── Flow Modal ── */}
+      {showFlowModal && (
+        <div style={S.modal} onClick={() => setShowFlowModal(false)}>
+          <div style={S.modalContent} onClick={e => e.stopPropagation()}>
+            <h2 style={{ margin: '0 0 20px 0', fontSize: 18, fontWeight: 700 }}>
+              {editingFlow ? 'Editar Flow' : 'Novo Flow'}
+            </h2>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={S.label}>Nome</label>
+              <input
+                style={{ ...S.input, ...(inputFocus.flowName ? { borderColor: C.primary } : {}) }}
+                value={flowForm.name}
+                onChange={e => setFlowForm(f => ({ ...f, name: e.target.value }))}
+                onFocus={() => setInputFocus(f => ({ ...f, flowName: true }))}
+                onBlur={() => setInputFocus(f => ({ ...f, flowName: false }))}
+                placeholder="Ex: Atendimento Vendas"
+              />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={S.label}>Path (URL única)</label>
+              <input
+                style={{ ...S.input, ...(inputFocus.flowPath ? { borderColor: C.primary } : {}) }}
+                value={flowForm.path}
+                onChange={e => setFlowForm(f => ({ ...f, path: e.target.value.replace(/\s/g, '-').toLowerCase().replace(/[^a-z0-9-]/g, '') }))}
+                onFocus={() => setInputFocus(f => ({ ...f, flowPath: true }))}
+                onBlur={() => setInputFocus(f => ({ ...f, flowPath: false }))}
+                placeholder="ex: vendas"
+              />
+              <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+                Webhook: <code style={{ color: C.primary }}>{webhookBase}/{flowForm.path || '…'}/webhook</code>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={S.label}>Descrição</label>
+              <input
+                style={{ ...S.input, ...(inputFocus.flowDesc ? { borderColor: C.primary } : {}) }}
+                value={flowForm.description}
+                onChange={e => setFlowForm(f => ({ ...f, description: e.target.value }))}
+                onFocus={() => setInputFocus(f => ({ ...f, flowDesc: true }))}
+                onBlur={() => setInputFocus(f => ({ ...f, flowDesc: false }))}
+                placeholder="Opcional"
+              />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={S.label}>Resposta padrão (fallback)</label>
+              <textarea
+                style={{ ...S.textarea, ...(inputFocus.flowDefault ? { borderColor: C.primary } : {}) }}
+                rows={3}
+                value={flowForm.defaultAnswer}
+                onChange={e => setFlowForm(f => ({ ...f, defaultAnswer: e.target.value }))}
+                onFocus={() => setInputFocus(f => ({ ...f, flowDefault: true }))}
+                onBlur={() => setInputFocus(f => ({ ...f, flowDefault: false }))}
+                placeholder="Quando nenhuma resposta casar..."
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button style={S.btn()} onClick={() => setShowFlowModal(false)}>Cancelar</button>
+              <button
+                style={S.btn(true)}
+                onClick={saveFlow}
+                disabled={loading || !flowForm.name || !flowForm.path}
+              >
+                {loading ? 'Salvando…' : (editingFlow ? 'Salvar' : 'Criar Flow')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Answer Modal ── */}
       {showAnswerModal && (
         <div style={S.modal} onClick={() => setShowAnswerModal(false)}>
